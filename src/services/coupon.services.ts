@@ -1,7 +1,7 @@
 // src/services/coupon.services.ts
 import { ObjectId } from 'mongodb'
 import databaseService from './database.services'
-import Coupon, { CouponTypes, CouponApplicability } from '../models/schemas/Coupon.schema'
+import Coupon, { CouponApplicability, CouponTypes } from '../models/schemas/Coupon.schema'
 
 class CouponService {
   async createCoupon({

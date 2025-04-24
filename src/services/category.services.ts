@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb'
+import { ObjectId, WithId } from 'mongodb'
 import databaseService from './database.services'
 import Category from '../models/schemas/Category.schema'
 
@@ -236,16 +236,28 @@ class CategoryService {
 
     const allCategories = await databaseService.categories.find(filter).sort({ name: 1 }).toArray()
 
+    // Define an interface for category with children
+    interface CategoryWithChildren extends WithId<Category> {
+      children: CategoryWithChildren[]
+    }
+
     // Build tree
     const rootCategories = allCategories.filter((c) => !c.parent_id)
-    const categoryMap = new Map(allCategories.map((c) => [c._id.toString(), { ...c, children: [] }]))
+
+    // Specify the type explicitly when creating the map
+    const categoryMap = new Map<string, CategoryWithChildren>(
+      allCategories.map((c) => [c._id.toString(), { ...c, children: [] as CategoryWithChildren[] }])
+    )
 
     // Add children to their parents
     allCategories.forEach((category) => {
       if (category.parent_id) {
         const parent = categoryMap.get(category.parent_id.toString())
         if (parent) {
-          parent.children.push(categoryMap.get(category._id.toString()))
+          const childCategory = categoryMap.get(category._id.toString())
+          if (childCategory) {
+            parent.children.push(childCategory)
+          }
         }
       }
     })

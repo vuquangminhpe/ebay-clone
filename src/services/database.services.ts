@@ -13,6 +13,7 @@ import Dispute from '../models/schemas/Dispute.schema'
 import { envConfig } from '~/constants/config'
 import Address from '~/models/schemas/Address.chema'
 import VideoStatus from '~/models/schemas/VideoStatus.schema'
+import RefreshToken from '~/models/schemas/RefreshToken.schema'
 
 const uri = envConfig.mongodb_url
 const dbName = envConfig.db_name
@@ -153,6 +154,9 @@ class DatabaseService {
   }
   get disputes(): Collection<Dispute> {
     return this.db.collection('disputes')
+  }
+  get refreshToken(): Collection<RefreshToken> {
+    return this.db.collection('refreshToken')
   }
 }
 

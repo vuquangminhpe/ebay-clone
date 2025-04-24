@@ -24,7 +24,7 @@ interface UserType {
   email_verify_token?: string
   forgot_password_token?: string
   verify?: UserVerifyStatus
-  typeAccount: AccountStatus
+  typeAccount?: AccountStatus
   count_type_account: number
   subscription_end_date?: Date
   bio?: string

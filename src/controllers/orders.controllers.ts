@@ -41,7 +41,7 @@ export const createOrderController = async (req: Request<ParamsDictionary, any, 
       status: HTTP_STATUS.NOT_FOUND
     })
   }
-  const selectedItems = cart.items.filter((item: { selected: any }) => item.selected)
+  const selectedItems = (cart.items as any).filter((item: { selected: any }) => item.selected)
 
   if (selectedItems.length === 0) {
     return res.status(HTTP_STATUS.BAD_REQUEST).json({

@@ -187,7 +187,7 @@ class NotificationService {
         tax: `$${order.tax.toFixed(2)}`,
         discount: order.discount ? `$${order.discount.toFixed(2)}` : '$0.00',
         total: `$${order.total.toFixed(2)}`,
-        shipping_address: order.shipping_address || 'No shipping address provided',
+        shipping_address: order.shipping || 'No shipping address provided',
         payment_method: order.payment_method,
         order_link: `${envConfig.client_url}/orders/${orderId}`,
         shop_link: envConfig.client_url,
@@ -260,13 +260,13 @@ class NotificationService {
 
         // Calculate total for this seller's items
         const sellerTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-
+        const buyer_name = await databaseService.users.findOne({ _id: order.buyer_id })
         // Prepare template data
         const templateData = {
           seller_name: seller.name,
           order_number: order.order_number,
           order_date: new Date(order.created_at).toLocaleDateString(),
-          buyer_name: order.buyer_name || 'Customer',
+          buyer_name: buyer_name || 'Customer',
           items: items.map((item) => ({
             product_name: item.product_name,
             quantity: item.quantity,

@@ -103,7 +103,7 @@ export const updateCartItemController = async (
     })
   }
   // Check if product is in cart
-  const cartItem = cart.items.find((item) => item.product_id.toString() === product_id)
+  const cartItem = (cart.items as any).find((item: any) => item.product_id.toString() === product_id)
   if (!cartItem) {
     return res.status(HTTP_STATUS.NOT_FOUND).json({
       message: CART_MESSAGE.PRODUCT_NOT_IN_CART
@@ -202,14 +202,14 @@ export const applyCouponController = async (req: Request<ParamsDictionary, any, 
     })
   }
   // Calculate cart total for selected items
-  const selectedItems = cart.items.filter((item) => item.selected)
+  const selectedItems = (cart.items as any).filter((item: any) => item.selected)
   if (selectedItems.length === 0) {
     return res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: CART_MESSAGE.CART_IS_EMPTY
     })
   }
 
-  const subtotal = selectedItems.reduce((total, item) => total + item.price * item.quantity, 0)
+  const subtotal = selectedItems.reduce((total: number, item: any) => total + item.price * item.quantity, 0)
 
   // Check min purchase requirement
   if (coupon.min_purchase && subtotal < coupon.min_purchase) {
@@ -224,12 +224,12 @@ export const applyCouponController = async (req: Request<ParamsDictionary, any, 
 
     if (coupon.applicability === 'specific_products' && coupon.product_ids) {
       // Check if cart has any of the specific products
-      isApplicable = selectedItems.some((item) =>
+      isApplicable = selectedItems.some((item: { product_id: { toString: () => string } }) =>
         coupon.product_ids?.some((pid) => pid.toString() === item.product_id.toString())
       )
     } else if (coupon.applicability === 'specific_categories' && coupon.category_ids) {
       // Get product details for all cart items
-      const productIds = selectedItems.map((item) => item.product_id)
+      const productIds = selectedItems.map((item: { product_id: any }) => item.product_id)
       const products = await productService.getProductsByIds(productIds)
 
       // Check if any product belongs to the specified categories

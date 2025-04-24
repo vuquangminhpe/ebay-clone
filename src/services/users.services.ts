@@ -1,4 +1,4 @@
-import { TokenType, UserVerifyStatus } from '../constants/enums'
+import { AccountStatus, TokenType, UserVerifyStatus } from '../constants/enums'
 import { RegisterReqBody, UpdateMeReqBody, UpdateUserReqBody } from '../models/request/User.request'
 import { hashPassword } from '../utils/crypto'
 import { signToken } from '../utils/jwt'
@@ -12,10 +12,9 @@ import { verifyEmail as sendVerifyEmail, verifyEmail, verifyForgotPassword } fro
 import { envConfig } from '../constants/config'
 import valkeyService from './valkey.services'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { PROMPT_CHAT } from '../constants/prompt'
 import { extractContentAndInsertToDB } from '../utils/utils'
 import databaseService from './database.services'
-import User from '~/models/schemas/User.schema'
+import User, { UserRole } from '~/models/schemas/User.schema'
 
 config()
 class UserService {
@@ -88,9 +87,12 @@ class UserService {
       new User({
         ...payload,
         _id: user_id,
-        role: UserRole.Student,
+        role: UserRole.BUYER,
         email_verify_token: email_verify_token,
-        password: hashPassword(payload.password)
+        password: hashPassword(payload.password),
+        typeAccount: AccountStatus.FREE,
+        count_type_account: 0,
+        date_of_birth: new Date(payload.date_of_birth)
       })
     )
 
@@ -189,8 +191,7 @@ class UserService {
         name: userInfo.name,
         date_of_birth: new Date().toISOString(),
         password,
-        confirm_password: password,
-        class: '1'
+        confirm_password: password
       })
       return {
         ...data,
@@ -432,17 +433,7 @@ class UserService {
     )
     return changePassword
   }
-  async chatWithGemini(count: number) {
-    const apiKey = process.env.GERMINI_API_KEY
-    const genAI = new GoogleGenerativeAI(apiKey as string)
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
-    const result = await model.generateContent(PROMPT_CHAT(count))
 
-    const response = await result.response
-    const aiResponseText = response.text()
-
-    return await extractContentAndInsertToDB(aiResponseText)
-  }
   async updateUser(user_id: string, payload: UpdateUserReqBody) {
     const user = await databaseService.users.findOneAndUpdate(
       { _id: new ObjectId(user_id) },

@@ -2,68 +2,66 @@ import { ObjectId } from 'mongodb'
 import databaseService from './database.services'
 import Cart, { CartItem } from '../models/schemas/Cart.schema'
 import productService from './products.services'
+import couponService from './coupon.services'
 
 class CartService {
   async getCart(user_id: string) {
     // Find existing cart or create a new one
-    let cart = await databaseService.carts.findOne({ user_id: new ObjectId(user_id) })
-
-    if (!cart) {
-      cart = new Cart({
-        user_id: new ObjectId(user_id),
-        items: []
-      })
-
-      await databaseService.carts.insertOne(cart)
-    }
+    const cart = await databaseService.carts.findOne({ user_id: new ObjectId(user_id) })
 
     // Enrich cart with product details
-    if (cart.items.length > 0) {
-      const productIds = cart.items.map((item) => item.product_id)
-      const products = await productService.getProductsByIds(productIds)
+    if (Number(cart?.items.length) > 0) {
+      const productIds = cart?.items.map((item) => item.product_id)
+      const products = await productService.getProductsByIds(productIds as any)
 
       // Create a map for quick lookup
       const productMap = new Map(products.map((p) => [p._id.toString(), p]))
 
       // Add product details to cart items
-      const enrichedItems = cart.items.map((item) => {
+      const enrichedItems = cart?.items.map((item) => {
         const product = productMap.get(item.product_id.toString())
+        let inStock = false
+        let currentPrice = 0
+
+        if (product) {
+          if (item.variant_id) {
+            // If it's a variant product
+            const variant = product.variants?.find((v) => v._id?.toString() === item.variant_id?.toString())
+            inStock = variant ? (variant.stock || 0) >= item.quantity : false
+            currentPrice = variant?.price || product.price || 0
+          } else {
+            // Regular product
+            inStock = (product.quantity || 0) >= item.quantity
+            currentPrice = product.price || 0
+          }
+        }
+
         return {
           ...item,
           product_name: product?.name || 'Product not available',
           product_image: product?.medias?.find((m) => m.is_primary)?.url || '',
-          available: product ? true : false,
-          in_stock: item.variant_id
-            ? (product?.variants?.find((v) => v._id?.toString() === item.variant_id?.toString())?.stock || 0) >=
-              item.quantity
-            : (product?.quantity || 0) >= item.quantity,
-          current_price: product?.price || 0
+          available: !!product,
+          in_stock: inStock,
+          current_price: currentPrice
         }
       })
 
       return {
         ...cart,
         items: enrichedItems,
+        products,
         subtotal: enrichedItems
-          .filter((item) => item.selected && item.available && item.in_stock)
+          ?.filter((item) => item.selected && item.available && item.in_stock)
           .reduce((sum, item) => sum + item.price * item.quantity, 0)
       }
     }
 
     return cart
   }
-
   async addToCart(user_id: string, cartItem: CartItem) {
-    // Find existing cart or create a new one
-    let cart = await databaseService.carts.findOne({ user_id: new ObjectId(user_id) })
-
+    const cart = await databaseService.carts.findOne({ user_id: new ObjectId(user_id) })
     if (!cart) {
-      cart = new Cart({
-        user_id: new ObjectId(user_id),
-        items: []
-      })
-
-      await databaseService.carts.insertOne(cart)
+      throw new Error('Cart not found')
     }
 
     // Check if product already exists in cart
@@ -82,7 +80,7 @@ class CartService {
         },
         {
           $set: {
-            [`items.${existingItemIndex}.quantity`]: cart.items[existingItemIndex].quantity + cartItem.quantity,
+            [`items.${existingItemIndex}.quantity`]: cart?.items[existingItemIndex].quantity + cartItem.quantity,
             [`items.${existingItemIndex}.selected`]: true,
             updated_at: new Date()
           }
@@ -108,9 +106,23 @@ class CartService {
     updates: {
       quantity?: number
       selected?: boolean
-    }
+    },
+    variant_id?: string
   ) {
     const updateData: any = { updated_at: new Date() }
+
+    // Build the correct filter to match product and variant if present
+    const filter: any = {
+      user_id: new ObjectId(user_id),
+      'items.product_id': new ObjectId(product_id)
+    }
+
+    if (variant_id) {
+      filter['items.variant_id'] = new ObjectId(variant_id)
+    } else {
+      // Make sure we're updating an item with no variant
+      filter['items.variant_id'] = { $exists: false }
+    }
 
     if (updates.quantity !== undefined) {
       updateData['items.$.quantity'] = updates.quantity
@@ -120,25 +132,25 @@ class CartService {
       updateData['items.$.selected'] = updates.selected
     }
 
-    await databaseService.carts.updateOne(
-      {
-        user_id: new ObjectId(user_id),
-        'items.product_id': new ObjectId(product_id)
-      },
-      { $set: updateData }
-    )
+    await databaseService.carts.updateOne(filter, { $set: updateData })
 
     return this.getCart(user_id)
   }
 
-  async removeFromCart(user_id: string, product_id: string) {
-    await databaseService.carts.updateOne(
-      { user_id: new ObjectId(user_id) },
-      {
-        $pull: { items: { product_id: new ObjectId(product_id) } },
-        $set: { updated_at: new Date() }
-      }
-    )
+  async removeFromCart(user_id: string, product_id: string, variant_id?: string) {
+    // Build the filter to match product and variant if present
+    const filter = { user_id: new ObjectId(user_id) }
+    const pullFilter: any = { product_id: new ObjectId(product_id) }
+
+    // Add variant matching if a variant_id is provided
+    if (variant_id) {
+      pullFilter.variant_id = new ObjectId(variant_id)
+    }
+
+    await databaseService.carts.updateOne(filter, {
+      $pull: { items: pullFilter },
+      $set: { updated_at: new Date() }
+    })
 
     return this.getCart(user_id)
   }
@@ -149,7 +161,7 @@ class CartService {
       {
         $set: {
           items: [],
-          coupon_code: null,
+          coupon_code: '',
           updated_at: new Date()
         }
       }
@@ -177,7 +189,7 @@ class CartService {
       { user_id: new ObjectId(user_id) },
       {
         $set: {
-          coupon_code: null,
+          coupon_code: '',
           updated_at: new Date()
         }
       }
@@ -206,11 +218,17 @@ class CartService {
 
   async calculateCartTotal(user_id: string) {
     const cart = await this.getCart(user_id)
-
+    if (!cart) {
+      throw new Error('Cart not found')
+    }
     // Calculate subtotal from selected items that are available and in stock
-    const selectedItems = cart.items.filter((item) => item.selected && item.available && item.in_stock)
+    const selectedItems = (cart.items as any).filter((item: any) => item.selected && item.available && item.in_stock)
 
-    const subtotal = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    const subtotal = selectedItems.reduce(
+      (sum: number, item: { current_price: any; price: any; quantity: number }) =>
+        sum + (item.current_price || item.price) * item.quantity,
+      0
+    )
 
     // Calculate shipping
     // In a real app, this would likely be more complex based on location, weight, etc.
@@ -219,9 +237,9 @@ class CartService {
     // Check if all items have free shipping
     const allFreeShipping =
       selectedItems.length > 0 &&
-      selectedItems.every((item) => {
-        const product = cart?.products?.find((p) => p._id.toString() === item.product_id.toString())
-        return product?.free_shipping
+      selectedItems.every((item: any) => {
+        // Sử dụng thông tin free_shipping từ mỗi item thay vì từ cart.products
+        return item.free_shipping || false
       })
 
     if (allFreeShipping) {
@@ -234,33 +252,38 @@ class CartService {
 
     // Apply coupon if exists
     let discount = 0
-    if (cart?.coupon_code) {
-      const coupon = await couponService.getCouponByCode(cart.coupon_code)
+    if (cart.coupon_code) {
+      try {
+        const coupon = await couponService.getCouponByCode(cart.coupon_code)
 
-      if (coupon && coupon.is_active) {
-        // Check if coupon is valid
-        const now = new Date()
-        const couponValid = now >= coupon.starts_at && now <= coupon.expires_at
+        if (coupon && coupon.is_active) {
+          // Check if coupon is valid
+          const now = new Date()
+          const couponValid = now >= coupon.starts_at && now <= coupon.expires_at
 
-        if (couponValid) {
-          // Calculate discount based on coupon type
-          if (coupon.type === 'percentage') {
-            discount = subtotal * (coupon.value / 100)
+          if (couponValid) {
+            // Calculate discount based on coupon type
+            if (coupon.type === ('percentage' as any)) {
+              discount = subtotal * (coupon.value / 100)
 
-            // Apply max discount if specified
-            if (coupon.max_discount && discount > coupon.max_discount) {
-              discount = coupon.max_discount
-            }
-          } else {
-            // fixed amount
-            discount = coupon.value
+              // Apply max discount if specified
+              if (coupon.max_discount && discount > coupon.max_discount) {
+                discount = coupon.max_discount
+              }
+            } else {
+              // fixed amount
+              discount = coupon.value
 
-            // Don't exceed subtotal
-            if (discount > subtotal) {
-              discount = subtotal
+              // Don't exceed subtotal
+              if (discount > subtotal) {
+                discount = subtotal
+              }
             }
           }
         }
+      } catch (error) {
+        console.error('Error applying coupon:', error)
+        // Continue without applying the coupon
       }
     }
 
@@ -274,7 +297,7 @@ class CartService {
       discount,
       total,
       items_count: selectedItems.length,
-      total_items: selectedItems.reduce((sum, item) => sum + item.quantity, 0)
+      total_items: selectedItems.reduce((sum: any, item: { quantity: any }) => sum + item.quantity, 0)
     }
   }
 }

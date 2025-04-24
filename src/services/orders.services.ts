@@ -3,6 +3,7 @@ import databaseService from './database.services'
 import Order, { OrderItem, OrderStatus, PaymentMethod } from '../models/schemas/Order.schema'
 import { CartItem } from '../models/schemas/Cart.schema'
 import productService from './products.services'
+import couponService from './coupon.services'
 
 class OrderService {
   async createOrder({

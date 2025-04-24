@@ -15,7 +15,7 @@ interface CouponType {
   _id?: ObjectId
   code: string
   description: string
-  type: CouponType
+  type: CouponTypes
   value: number
   min_purchase?: number
   max_discount?: number
@@ -36,7 +36,7 @@ export default class Coupon {
   _id?: ObjectId
   code: string
   description: string
-  type: CouponType
+  type: CouponTypes
   value: number
   min_purchase?: number
   max_discount?: number

@@ -156,7 +156,8 @@ class PaymentService {
 
       // Save payment record in database
       const payment = {
-        order_id: new ObjectId(order._id),
+        _id: new ObjectId(),
+        order_id: new ObjectId(order._id as string),
         provider_order_id: response.data.id,
         provider: PaymentProvider.PAYPAL,
         amount: order.total,
@@ -236,7 +237,7 @@ class PaymentService {
           { _id: payment.order_id },
           {
             $set: {
-              status: OrderStatus.PAID,
+              status: OrderStatus.PAID as any,
               payment_status: true,
               payment_details: {
                 provider: PaymentProvider.PAYPAL,
@@ -340,7 +341,7 @@ class PaymentService {
           { _id: payment.order_id },
           {
             $set: {
-              status: OrderStatus.REFUNDED,
+              status: OrderStatus.REFUNDED as any,
               refund_details: {
                 amount: amount || payment.amount,
                 reason,
@@ -470,7 +471,7 @@ class PaymentService {
       { _id: payment.order_id },
       {
         $set: {
-          status: OrderStatus.PAID,
+          status: OrderStatus.PAID as any,
           payment_status: true,
           updated_at: new Date()
         }
@@ -507,7 +508,7 @@ class PaymentService {
       { _id: payment.order_id },
       {
         $set: {
-          status: OrderStatus.PENDING,
+          status: OrderStatus.PENDING as any,
           payment_status: false,
           updated_at: new Date()
         }
@@ -550,7 +551,7 @@ class PaymentService {
         { _id: payment.order_id },
         {
           $set: {
-            status: OrderStatus.REFUNDED,
+            status: OrderStatus.REFUNDED as any,
             updated_at: new Date()
           }
         }
