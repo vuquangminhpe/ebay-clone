@@ -1,5 +1,6 @@
 import { JwtPayload } from 'jsonwebtoken'
-import { TokenType, UserVerifyStatus } from '../../constants/enums'
+import { TokenType, UserRole, UserVerifyStatus } from '../../constants/enums'
+import { ObjectId } from 'mongodb'
 
 export interface UpdateMeReqBody {
   name?: string
@@ -66,4 +67,9 @@ export interface ResetPasswordReqBody {
 
 export interface UserProfileReqBody {
   username: string
+}
+export interface UpdateUserReqBody {
+  role: UserRole.SELLER
+  store_id: ObjectId
+  is_seller_verified: boolean
 }

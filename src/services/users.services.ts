@@ -1,9 +1,7 @@
 import { TokenType, UserVerifyStatus } from '../constants/enums'
-import { RegisterReqBody, UpdateMeReqBody } from '../models/request/User.request'
-import User, { UserRole } from '../models/schemas/User.schema'
+import { RegisterReqBody, UpdateMeReqBody, UpdateUserReqBody } from '../models/request/User.request'
 import { hashPassword } from '../utils/crypto'
 import { signToken } from '../utils/jwt'
-import databaseService from './database.services'
 import { ObjectId } from 'bson'
 import { USERS_MESSAGES } from '../constants/messages'
 import { ErrorWithStatus } from '../models/Errors'
@@ -16,6 +14,8 @@ import valkeyService from './valkey.services'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { PROMPT_CHAT } from '../constants/prompt'
 import { extractContentAndInsertToDB } from '../utils/utils'
+import databaseService from './database.services'
+import User from '~/models/schemas/User.schema'
 
 config()
 class UserService {
@@ -442,6 +442,39 @@ class UserService {
     const aiResponseText = response.text()
 
     return await extractContentAndInsertToDB(aiResponseText)
+  }
+  async updateUser(user_id: string, payload: UpdateUserReqBody) {
+    const user = await databaseService.users.findOneAndUpdate(
+      { _id: new ObjectId(user_id) },
+      {
+        $set: {
+          ...(payload as UpdateMeReqBody & { date_of_birth?: Date })
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      }
+    )
+    return user
+  }
+  async getUserById(user_id: string) {
+    const user = await databaseService.users.findOne(
+      { _id: new ObjectId(user_id) },
+      {
+        projection: {
+          password: 0,
+          email_verify_token: 0,
+          forgot_password_token: 0
+        }
+      }
+    )
+    if (user === null) {
+      throw new ErrorWithStatus({
+        message: USERS_MESSAGES.USER_NOT_FOUND,
+        status: HTTP_STATUS.NOT_FOUND
+      })
+    }
+    return user
   }
 }
 

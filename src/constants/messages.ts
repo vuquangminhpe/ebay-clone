@@ -177,7 +177,8 @@ export const STORE_MESSAGE = {
   DESCRIPTION_IS_REQUIRED: 'Store description is required',
   STORE_ALREADY_EXISTS: 'You already have a store',
   SELLER_VERIFICATION_REQUIRED: 'Seller verification is required to create a store',
-  UNAUTHORIZED_STORE_ACCESS: 'You are not authorized to access this store'
+  UNAUTHORIZED_STORE_ACCESS: 'You are not authorized to access this store',
+  SWITCH_TO_SELLER_SUCCESS: 'Switched to seller mode successfully'
 } as const
 
 export const REVIEW_MESSAGE = {
