@@ -2,8 +2,7 @@ import { ObjectId } from 'mongodb'
 import databaseService from './database.services'
 import Order, { OrderItem, OrderStatus, PaymentMethod } from '../models/schemas/Order.schema'
 import { CartItem } from '../models/schemas/Cart.schema'
-import productService from './product.services'
-import couponService from './coupon.services'
+import productService from './products.services'
 
 class OrderService {
   async createOrder({
@@ -54,11 +53,12 @@ class OrderService {
         return {
           product_id: item.product_id,
           product_name: product.name,
-          product_image: product.medias.find((m) => m.is_primary)?.url || product.medias[0]?.url || '',
+          product_image:
+            product.medias.find((m: { is_primary: any }) => m.is_primary)?.url || product.medias[0]?.url || '',
           quantity: item.quantity,
           price: item.price,
           variant: item.variant_id
-            ? product.variants?.find((v) => v._id?.toString() === item.variant_id?.toString())?.attributes
+            ? product.variants?.find((v: any) => v._id?.toString() === item.variant_id?.toString())?.attributes
             : undefined,
           seller_id: product.seller_id
         }
@@ -117,7 +117,7 @@ class OrderService {
 
   private async checkAllFreeShipping(productIds: ObjectId[]) {
     const products = await productService.getProductsByIds(productIds)
-    return products.every((product) => product.free_shipping)
+    return products.every((product: { free_shipping: any }) => product.free_shipping)
   }
 
   private async calculateCouponDiscount(coupon_code: string, subtotal: number, orderItems: OrderItem[]) {
@@ -150,7 +150,9 @@ class OrderService {
       if (coupon.applicability === 'specific_products' && coupon.product_ids) {
         // Calculate subtotal of only the specific products
         discountableSubtotal = orderItems
-          .filter((item) => coupon.product_ids?.some((pid) => pid.toString() === item.product_id.toString()))
+          .filter((item) =>
+            coupon.product_ids?.some((pid: { toString: () => string }) => pid.toString() === item.product_id.toString())
+          )
           .reduce((sum, item) => sum + item.price * item.quantity, 0)
       } else if (coupon.applicability === 'specific_categories' && coupon.category_ids) {
         // Get product details for all items
@@ -160,8 +162,15 @@ class OrderService {
         // Calculate subtotal of only products in the specific categories
         discountableSubtotal = orderItems
           .filter((item) => {
-            const product = products.find((p) => p._id.toString() === item.product_id.toString())
-            return product && coupon.category_ids?.some((cid) => cid.toString() === product.category_id.toString())
+            const product = products.find(
+              (p: { _id: { toString: () => string } }) => p._id.toString() === item.product_id.toString()
+            )
+            return (
+              product &&
+              coupon.category_ids?.some(
+                (cid: { toString: () => any }) => cid.toString() === product.category_id.toString()
+              )
+            )
           })
           .reduce((sum, item) => sum + item.price * item.quantity, 0)
       }

@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 import databaseService from './database.services'
-import Address from '../models/schemas/Address.schema'
 import { CreateAddressReqBody, UpdateAddressReqBody } from '../models/request/Address.request'
+import Address from '~/models/schemas/Address.chema'
 
 class AddressService {
   async createAddress(payload: CreateAddressReqBody & { user_id: ObjectId }) {

@@ -1,8 +1,7 @@
 import { ObjectId } from 'mongodb'
 import databaseService from './database.services'
 import Cart, { CartItem } from '../models/schemas/Cart.schema'
-import productService from './product.services'
-import couponService from './coupon.services'
+import productService from './products.services'
 
 class CartService {
   async getCart(user_id: string) {
@@ -221,7 +220,7 @@ class CartService {
     const allFreeShipping =
       selectedItems.length > 0 &&
       selectedItems.every((item) => {
-        const product = cart.products?.find((p) => p._id.toString() === item.product_id.toString())
+        const product = cart?.products?.find((p) => p._id.toString() === item.product_id.toString())
         return product?.free_shipping
       })
 
@@ -235,7 +234,7 @@ class CartService {
 
     // Apply coupon if exists
     let discount = 0
-    if (cart.coupon_code) {
+    if (cart?.coupon_code) {
       const coupon = await couponService.getCouponByCode(cart.coupon_code)
 
       if (coupon && coupon.is_active) {
