@@ -6,8 +6,8 @@ import Product, {
   ProductStatus,
   ProductVariant
 } from '../models/schemas/Product.schema'
-import storeService from './store.services'
 import { CreateProductReqBody, UpdateProductReqBody } from '../models/request/Product.request'
+import storeService from './store.services'
 
 class ProductService {
   async createProduct(user_id: string, payload: CreateProductReqBody) {

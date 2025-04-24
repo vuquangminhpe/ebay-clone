@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Order Has Been Shipped</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .header {
+        background-color: #4267b2;
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+      .shipping-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+      }
+      .logo {
+        max-width: 150px;
+        margin-bottom: 20px;
+      }
+      .footer {
+        background-color: #f7f7f7;
+        padding: 20px;
+        text-align: center;
+        font-size: 12px;
+        color: #777;
+      }
+      .tracking-section {
+        background-color: #f0f7ff;
+        border: 1px solid #b3d7ff;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 20px 0;
+        text-align: center;
+      }
+      .tracking-number {
+        font-size: 18px;
+        font-weight: bold;
+        color: #0056b3;
+        margin: 10px 0;
+        padding: 5px;
+        background-color: #e6f0ff;
+        border-radius: 3px;
+        display: inline-block;
+      }
+      .order-details {
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+      .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+      .items-table th,
+      .items-table td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+      }
+      .items-table th {
+        background-color: #f2f2f2;
+      }
+      .button {
+        display: inline-block;
+        background-color: #4267b2;
+        color: white;
+        padding: 12px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        margin: 20px 0;
+      }
+      .shipping-stages {
+        display: flex;
+        justify-content: space-between;
+        margin: 30px 0;
+        position: relative;
+      }
+      .shipping-stages:before {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: 20px;
+        right: 20px;
+        height: 3px;
+        background-color: #ddd;
+        z-index: 1;
+      }
+      .stage {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        position: relative;
+        z-index: 2;
+      }
+      .stage.active {
+        background-color: #4caf50;
+      }
+      .stage-label {
+        position: absolute;
+        top: 35px;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        font-size: 12px;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <!-- <img src="https://yourdomain.com/logo.png" alt="eBay Clone Logo" class="logo"> -->
+        <div class="shipping-icon">📦</div>
+        <h1>Your Order Has Been Shipped!</h1>
+      </div>
+
+      <p>Hello {{buyer_name}},</p>
+
+      <p>Great news! Your order has been shipped and is on its way to you.</p>
+
+      <div class="tracking-section">
+        <h3>Tracking Information</h3>
+        <p>You can track your package using the following tracking number:</p>
+        <div class="tracking-number">{{tracking_number}}</div>
+        {{#if tracking_number}}
+        <p>
+          <a href="https://www.trackingwebsite.com/track?number={{tracking_number}}" class="button"
+            >Track Your Package</a
+          >
+        </p>
+        {{/if}}
+      </div>
+
+      <div class="shipping-stages">
+        <div class="stage active">
+          <span>1</span>
+          <div class="stage-label">Order Placed</div>
+        </div>
+        <div class="stage active">
+          <span>2</span>
+          <div class="stage-label">Processing</div>
+        </div>
+        <div class="stage active">
+          <span>3</span>
+          <div class="stage-label">Shipped</div>
+        </div>
+        <div class="stage">
+          <span>4</span>
+          <div class="stage-label">Delivered</div>
+        </div>
+      </div>
+
+      <div class="order-details">
+        <h2>Order Information</h2>
+        <p><strong>Order Number:</strong> {{order_number}}</p>
+        <p><strong>Order Date:</strong> {{order_date}}</p>
+        <p><strong>Payment Method:</strong> {{payment_method}}</p>
+      </div>
+
+      <h2>Items Shipped</h2>
+
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each items}}
+          <tr>
+            <td>{{this.product_name}}</td>
+            <td>{{this.quantity}}</td>
+            <td>{{this.price}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+
+      <div class="shipping-info">
+        <h2>Shipping Address</h2>
+        <p>{{shipping_address}}</p>
+      </div>
+
+      <div style="text-align: center">
+        <a href="{{order_link}}" class="button">View Order Details</a>
+      </div>
+
+      <p>If you have any questions about your shipment, please contact our customer service team.</p>
+
+      <p>Thank you for shopping with us!</p>
+
+      <p>Regards,<br />The eBay Clone Team</p>
+
+      <div class="footer">
+        <p>This email was sent to you as a registered user of eBay Clone.</p>
+        <p>&copy; {{current_year}} eBay Clone. All rights reserved.</p>
+        <p>
+          <a href="{{shop_link}}">Visit Our Website</a> |
+          <a href="{{shop_link}}/contact">Contact Us</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
