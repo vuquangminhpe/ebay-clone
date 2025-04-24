@@ -1,29 +1,43 @@
 import express from 'express'
-import databaseService from './services/database.services'
 import usersRouter from './routes/user.routes'
 import { defaultErrorHandler } from './middlewares/error.middlewares'
 import mediasRouter from './routes/medias.routes'
 import { config } from 'dotenv'
 import staticRouter from './routes/static.routes'
 import { initFolderImage, initFolderVideo, initFolderVideoHls } from './utils/file'
+import { UPLOAD_VIDEO_DIR, UPLOAD_VIDEO_HLS_DIR } from './constants/dir'
 import cors, { CorsOptions } from 'cors'
-import { createServer } from 'http'
-import { initSocketServer } from './socket'
 // import '../utils/fake'
 import './utils/s3'
+import { createServer } from 'http'
 import helmet from 'helmet'
 import { envConfig, isProduction } from './constants/config'
 
-import adminRouter from './routes/admin.routes'
-import apiRouter from './routes'
-import geminiRoutes from './routes/gemini.routes'
-import { startExamExpirationScheduler } from './services/examScheduler/examScheduler'
+// Import new eBay clone routes
+import productsRouter from './routes/products.routes'
+import cartRouter from './routes/cart.routes'
+import orderRouter from './routes/order.routes'
+import addressRouter from './routes/address.routes'
+import categoryRouter from './routes/category.routes'
+import reviewRouter from './routes/review.routes'
+import couponRouter from './routes/coupon.routes'
+import storeRouter from './routes/store.routes'
+import disputeRouter from './routes/dispute.routes'
+import databaseService from './services/database.services'
+
 config()
 databaseService
   .connect()
   .then(() => {
-    databaseService.indexVideoStatus()
-    startExamExpirationScheduler()
+    // Original indexes
+    databaseService.indexUsers()
+
+    // New indexes for eBay clone
+    databaseService.indexProducts()
+    databaseService.indexOrders()
+    databaseService.indexAddresses()
+    databaseService.indexReviews()
+    databaseService.indexCoupons()
   })
   .catch()
 // const limiter = rateLimit({
@@ -38,7 +52,7 @@ const httpServer = createServer(app)
 const port = envConfig.port || 3002
 app.use(helmet())
 const corsOptions: CorsOptions = {
-  origin: '*',
+  origin: isProduction ? envConfig.client_url : '*',
   optionsSuccessStatus: 200
 }
 
@@ -54,15 +68,25 @@ try {
   console.error('Error initializing directories:', error)
 }
 app.use(express.json())
+
+// Original routes
 app.use('/users', usersRouter)
 app.use('/medias', mediasRouter)
-
 app.use('/static', staticRouter)
-app.use('/admin', adminRouter)
-app.use('/api', apiRouter)
-app.use('/gemini', geminiRoutes)
+
+// New eBay clone routes
+app.use('/products', productsRouter)
+app.use('/cart', cartRouter)
+app.use('/orders', orderRouter)
+app.use('/addresses', addressRouter)
+app.use('/categories', categoryRouter)
+app.use('/reviews', reviewRouter)
+app.use('/coupons', couponRouter)
+app.use('/stores', storeRouter)
+app.use('/disputes', disputeRouter)
+
 // app.use('/static/video-hls', express.static(UPLOAD_VIDEO_HLS_DIR))
-const io = initSocketServer(httpServer)
+
 app.use(defaultErrorHandler)
 
 httpServer.listen(port, () => {
