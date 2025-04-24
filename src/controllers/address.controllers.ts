@@ -107,7 +107,7 @@ export const deleteAddressController = async (req: Request<AddressParams>, res: 
     if (addresses.length > 0) {
       await userService.updateDefaultAddress(user_id, addresses[0]._id.toString())
     } else {
-      await userService.updateDefaultAddress(user_id, null)
+      await userService.updateDefaultAddress(user_id, '')
     }
   }
 

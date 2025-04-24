@@ -5,7 +5,7 @@ import { REVIEW_MESSAGE } from '../constants/messages'
 import HTTP_STATUS from '../constants/httpStatus'
 import { TokenPayload } from '../models/request/User.request'
 import reviewService from '../services/review.services'
-import { CreateReviewReqBody, ReviewParams, UpdateReviewReqBody } from '../models/request/Reviews.request.ts'
+import { CreateReviewReqBody, ReviewParams, UpdateReviewReqBody } from '../models/request/Reviews.request'
 
 export const createReviewController = async (
   req: Request<ParamsDictionary, any, CreateReviewReqBody>,

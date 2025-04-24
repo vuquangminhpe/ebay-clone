@@ -1,8 +1,7 @@
 import { checkSchema, ParamSchema } from 'express-validator'
 import { validate } from '../utils/validation'
 import usersService from '../services/users.services'
-import { TWEET_MESSAGE, USERS_MESSAGES } from '../constants/messages'
-import databaseService from '../services/database.services'
+import { USERS_MESSAGES } from '../constants/messages'
 import { hashPassword } from '../utils/crypto'
 import { verifyToken } from '../utils/jwt'
 import { ErrorWithStatus } from '../models/Errors'
@@ -12,7 +11,7 @@ import _, { capitalize } from 'lodash'
 import { NextFunction, Request, RequestHandler } from 'express'
 import { ObjectId } from 'mongodb'
 import { TokenPayload } from '../models/request/User.request'
-import { AccountStatus, UserVerifyStatus } from '../constants/enums'
+import { AccountStatus, UserRole, UserVerifyStatus } from '../constants/enums'
 import { REGEX_USERNAME } from '../constants/regex'
 import { ParsedQs } from 'qs'
 import { ParamsDictionary } from 'express-serve-static-core'
@@ -20,6 +19,7 @@ import { Response as ExpressResponse } from 'express-serve-static-core'
 import { verifyAccessToken } from '../utils/common'
 import { envConfig } from '../constants/config'
 import valkeyService from '../services/valkey.services'
+import databaseService from '~/services/database.services'
 
 type ExpressMiddleware = RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>
 const passwordSchema: ParamSchema = {
@@ -600,3 +600,21 @@ export const premiumUserValidator = validate(
     ['headers']
   )
 )
+
+// Add to src/middlewares/users.middlewares.ts
+
+// Admin only validator
+export const adminOnlyValidator: RequestHandler = (req: Request, res, next: NextFunction) => {
+  const { role } = req.decode_authorization as TokenPayload
+
+  if (role !== UserRole.ADMIN) {
+    return next(
+      new ErrorWithStatus({
+        message: USERS_MESSAGES.ADMIN_PERMISSION_REQUIRED,
+        status: HTTP_STATUS.FORBIDDEN
+      })
+    )
+  }
+
+  next()
+}

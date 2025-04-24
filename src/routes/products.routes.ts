@@ -8,7 +8,7 @@ import {
   updateProductController
 } from '../controllers/products.controllers'
 import { AccessTokenValidator, verifiedUserValidator } from '../middlewares/users.middlewares'
-import { createProductValidator, updateProductValidator } from '../middlewares/products.middlewares'
+import { createProductValidator, updateProductValidator } from '../middlewares/product.middlewares'
 import { wrapAsync } from '../utils/handler'
 import { makeOptional } from '../utils/makeOptional'
 

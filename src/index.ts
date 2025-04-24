@@ -18,12 +18,10 @@ import productsRouter from './routes/products.routes'
 import cartRouter from './routes/cart.routes'
 import orderRouter from './routes/order.routes'
 import addressRouter from './routes/address.routes'
-import categoryRouter from './routes/category.routes'
-import reviewRouter from './routes/review.routes'
-import couponRouter from './routes/coupon.routes'
-import storeRouter from './routes/store.routes'
-import disputeRouter from './routes/dispute.routes'
 import databaseService from './services/database.services'
+import couponRouter from './routes/coupon.routes'
+import reviewRouter from './routes/review.routes'
+import categoryRouter from './routes/category.routes'
 
 config()
 databaseService
@@ -82,8 +80,7 @@ app.use('/addresses', addressRouter)
 app.use('/categories', categoryRouter)
 app.use('/reviews', reviewRouter)
 app.use('/coupons', couponRouter)
-app.use('/stores', storeRouter)
-app.use('/disputes', disputeRouter)
+app.use('/coupons', couponRouter)
 
 // app.use('/static/video-hls', express.static(UPLOAD_VIDEO_HLS_DIR))
 

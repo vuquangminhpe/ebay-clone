@@ -1,6 +1,7 @@
 import { MediaTypeQuery } from './enums'
 
 export const USERS_MESSAGES = {
+  ADMIN_PERMISSION_REQUIRED: 'Admin permission required',
   VALIDATION_ERROR: 'Validation error',
   INVALID_USER_ID: 'Invalid user id',
   NAME_IS_REQUIRED: 'Name is required',
@@ -137,6 +138,9 @@ export const ORDER_MESSAGE = {
 } as const
 
 export const CART_MESSAGE = {
+  COUPON_REMOVED_SUCCESS: 'Coupon removed successfully',
+  COUPON_APPLIED_SUCCESS: 'Coupon applied successfully',
+  CART_IS_EMPTY: 'Your cart is empty',
   ADD_TO_CART_SUCCESS: 'Product added to cart successfully',
   UPDATE_CART_SUCCESS: 'Cart updated successfully',
   REMOVE_FROM_CART_SUCCESS: 'Product removed from cart successfully',
@@ -144,7 +148,13 @@ export const CART_MESSAGE = {
   GET_CART_SUCCESS: 'Get cart success',
   CART_NOT_FOUND: 'Cart not found',
   INVALID_QUANTITY: 'Invalid quantity',
-  PRODUCT_NOT_IN_CART: 'Product not in cart'
+  PRODUCT_NOT_IN_CART: 'Product not in cart',
+  COUPON_NOT_FOUND: 'Coupon not found',
+  COUPON_ALREADY_APPLIED: 'Coupon already applied',
+  COUPON_NOT_APPLICABLE: 'Coupon not applicable to this cart',
+  COUPON_EXPIRED: 'Coupon expired',
+  COUPON_USAGE_LIMIT_REACHED: 'Coupon usage limit reached',
+  MINIMUM_PURCHASE_NOT_MET: 'Minimum purchase amount not met for this coupon'
 } as const
 
 export const ADDRESS_MESSAGE = {
@@ -198,6 +208,9 @@ export const REVIEW_MESSAGE = {
 } as const
 
 export const COUPON_MESSAGE = {
+  COUPON_VALID: 'Coupon is valid',
+  COUPON_INVALID: 'Coupon is invalid',
+  ADMIN_ONLY: 'Only administrators can perform this action',
   CREATE_COUPON_SUCCESS: 'Coupon created successfully',
   UPDATE_COUPON_SUCCESS: 'Coupon updated successfully',
   DELETE_COUPON_SUCCESS: 'Coupon deleted successfully',

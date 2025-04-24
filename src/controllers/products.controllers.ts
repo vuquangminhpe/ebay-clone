@@ -11,7 +11,7 @@ import {
   ProductQuery,
   UpdateProductReqBody
 } from '../models/request/Product.request'
-import productService from '../services/product.services'
+import productService from '../services/products.services'
 import { UserRole } from '../models/schemas/User.schema'
 
 export const createProductController = async (

@@ -309,7 +309,9 @@ export const upgradeToSellerController = async (req: Request, res: Response) => 
 
     // Update user role to seller
     await userService.updateUser(user_id, {
-      role: UserRole.SELLER
+      role: UserRole.SELLER,
+      store_id: new ObjectId(),
+      is_seller_verified: false
     })
 
     return res.status(HTTP_STATUS.OK).json({

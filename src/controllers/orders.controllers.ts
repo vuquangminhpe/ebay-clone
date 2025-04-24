@@ -14,11 +14,12 @@ import {
   ShipOrderReqBody,
   DeliverOrderReqBody
 } from '../models/request/Order.request'
-import orderService from '../services/order.services'
-import cartService from '../services/cart.services'
+import orderService from '../services/orders.services'
+import cartService from '../services/carts.services'
 import addressService from '../services/address.services'
 import { OrderStatus, PaymentMethod } from '../constants/enums'
 import { UserRole } from '../models/schemas/User.schema'
+import { ErrorWithStatus } from '~/models/Errors'
 
 export const createOrderController = async (req: Request<ParamsDictionary, any, CreateOrderReqBody>, res: Response) => {
   const { user_id } = req.decode_authorization as TokenPayload
@@ -34,7 +35,13 @@ export const createOrderController = async (req: Request<ParamsDictionary, any, 
 
   // Get cart with selected items
   const cart = await cartService.getCart(user_id)
-  const selectedItems = cart.items.filter((item) => item.selected)
+  if (!cart) {
+    throw new ErrorWithStatus({
+      message: CART_MESSAGE.CART_NOT_FOUND,
+      status: HTTP_STATUS.NOT_FOUND
+    })
+  }
+  const selectedItems = cart.items.filter((item: { selected: any }) => item.selected)
 
   if (selectedItems.length === 0) {
     return res.status(HTTP_STATUS.BAD_REQUEST).json({
@@ -55,7 +62,7 @@ export const createOrderController = async (req: Request<ParamsDictionary, any, 
   // Remove ordered items from cart
   await cartService.removeOrderedItems(
     user_id,
-    selectedItems.map((item) => item.product_id.toString())
+    selectedItems.map((item: { product_id: { toString: () => any } }) => item.product_id.toString())
   )
 
   return res.status(HTTP_STATUS.CREATED).json({
@@ -78,7 +85,9 @@ export const getOrderController = async (req: Request<OrderParams>, res: Respons
 
   // Only buyer, seller of items in order, or admin can view order
   const isBuyer = order.buyer_id.toString() === user_id
-  const isSeller = order.items.some((item) => item.seller_id.toString() === user_id)
+  const isSeller = order.items.some(
+    (item: { seller_id: { toString: () => string } }) => item.seller_id.toString() === user_id
+  )
   const isAdmin = role === UserRole.ADMIN
 
   if (!isBuyer && !isSeller && !isAdmin) {
@@ -140,7 +149,7 @@ export const getSellerOrdersController = async (
   // For sellers, we need to get orders where any item has their seller_id
   const result = await orderService.getSellerOrders({
     seller_id: user_id,
-    status: status as OrderStatus,
+    status: status as any,
     date_from: date_from ? new Date(date_from) : undefined,
     date_to: date_to ? new Date(date_to) : undefined,
     limit: parseInt(limit),
@@ -170,7 +179,9 @@ export const cancelOrderController = async (req: Request<OrderParams, any, Cance
 
   // Only buyer, seller, or admin can cancel an order
   const isBuyer = order.buyer_id.toString() === user_id
-  const isSeller = order.items.some((item) => item.seller_id.toString() === user_id)
+  const isSeller = order.items.some(
+    (item: { seller_id: { toString: () => string } }) => item.seller_id.toString() === user_id
+  )
   const isAdmin = role === UserRole.ADMIN
 
   if (!isBuyer && !isSeller && !isAdmin) {
@@ -191,7 +202,7 @@ export const cancelOrderController = async (req: Request<OrderParams, any, Cance
   }
 
   // Cancel order
-  await orderService.updateOrderStatus(order_id, OrderStatus.CANCELLED, {
+  await orderService.updateOrderStatus(order_id, OrderStatus.CANCELLED as any, {
     notes: reason || `Cancelled by ${isBuyer ? 'buyer' : isSeller ? 'seller' : 'admin'}`
   })
 
@@ -252,7 +263,7 @@ export const payOrderController = async (req: Request<OrderParams, any, PayOrder
   }
 
   // Update order status to PAID
-  await orderService.updateOrderStatus(order_id, OrderStatus.PAID, {
+  await orderService.updateOrderStatus(order_id, OrderStatus.PAID as any, {
     payment_status: true,
     payment_method
   })
@@ -276,7 +287,9 @@ export const shipOrderController = async (req: Request<OrderParams, any, ShipOrd
   }
 
   // Only seller of items in order or admin can ship an order
-  const isSeller = order.items.some((item) => item.seller_id.toString() === user_id)
+  const isSeller = order.items.some(
+    (item: { seller_id: { toString: () => string } }) => item.seller_id.toString() === user_id
+  )
   const isAdmin = role === UserRole.ADMIN
 
   if (!isSeller && !isAdmin) {
@@ -293,7 +306,7 @@ export const shipOrderController = async (req: Request<OrderParams, any, ShipOrd
   }
 
   // Update order status to SHIPPED
-  await orderService.updateOrderStatus(order_id, OrderStatus.SHIPPED, {
+  await orderService.updateOrderStatus(order_id, OrderStatus.SHIPPED as any, {
     tracking_number,
     notes: `Shipped by ${shipping_provider || 'seller'}. ${estimated_delivery_date ? `Estimated delivery: ${estimated_delivery_date}` : ''}`
   })
@@ -318,7 +331,9 @@ export const deliverOrderController = async (req: Request<OrderParams, any, Deli
 
   // Both buyer, seller, or admin can mark as delivered
   const isBuyer = order.buyer_id.toString() === user_id
-  const isSeller = order.items.some((item) => item.seller_id.toString() === user_id)
+  const isSeller = order.items.some(
+    (item: { seller_id: { toString: () => string } }) => item.seller_id.toString() === user_id
+  )
   const isAdmin = role === UserRole.ADMIN
 
   if (!isBuyer && !isSeller && !isAdmin) {
@@ -335,7 +350,7 @@ export const deliverOrderController = async (req: Request<OrderParams, any, Deli
   }
 
   // Update order status to DELIVERED
-  await orderService.updateOrderStatus(order_id, OrderStatus.DELIVERED, {
+  await orderService.updateOrderStatus(order_id, OrderStatus.DELIVERED as any, {
     notes: delivery_notes || `Marked as delivered by ${isBuyer ? 'buyer' : isSeller ? 'seller' : 'admin'}`
   })
 

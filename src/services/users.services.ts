@@ -476,6 +476,53 @@ class UserService {
     }
     return user
   }
+  async getAllUsers(page: number = 1, limit: number = 10) {
+    try {
+      const skip = (page - 1) * limit
+
+      const users = await databaseService.users
+        .find(
+          {},
+          {
+            projection: {
+              password: 0,
+              email_verify_token: 0,
+              forgot_password_token: 0
+            }
+          }
+        )
+        .skip(skip)
+        .limit(limit)
+        .toArray()
+
+      const totalUsers = await databaseService.users.countDocuments({})
+
+      return {
+        users,
+        total: totalUsers,
+        page,
+        limit,
+        totalPages: Math.ceil(totalUsers / limit)
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error)
+      return { users: [], total: 0, page, limit, totalPages: 0 }
+    }
+  }
+  async updateDefaultAddress(user_id: string, address_id: string) {
+    const user = await databaseService.users.findOneAndUpdate(
+      { _id: new ObjectId(user_id) },
+      {
+        $set: {
+          default_address_id: new ObjectId(address_id)
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      }
+    )
+    return user
+  }
 }
 
 const usersService = new UserService()

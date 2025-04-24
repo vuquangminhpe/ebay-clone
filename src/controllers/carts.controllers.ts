@@ -10,8 +10,8 @@ import {
   CartItemParams,
   UpdateCartItemReqBody
 } from '../models/request/Cart.request'
-import cartService from '../services/cart.services'
-import productService from '../services/product.services'
+import cartService from '../services/carts.services'
+import productService from '../services/products.services'
 import couponService from '../services/coupon.services'
 
 export const getCartController = async (req: Request, res: Response) => {
@@ -97,7 +97,11 @@ export const updateCartItemController = async (
 
   // Get current cart
   const cart = await cartService.getCart(user_id)
-
+  if (!cart) {
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      message: CART_MESSAGE.CART_NOT_FOUND
+    })
+  }
   // Check if product is in cart
   const cartItem = cart.items.find((item) => item.product_id.toString() === product_id)
   if (!cartItem) {
@@ -192,7 +196,11 @@ export const applyCouponController = async (req: Request<ParamsDictionary, any, 
 
   // Get cart
   const cart = await cartService.getCart(user_id)
-
+  if (!cart) {
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      message: CART_MESSAGE.CART_NOT_FOUND
+    })
+  }
   // Calculate cart total for selected items
   const selectedItems = cart.items.filter((item) => item.selected)
   if (selectedItems.length === 0) {
@@ -242,7 +250,7 @@ export const applyCouponController = async (req: Request<ParamsDictionary, any, 
 
   // Calculate discount amount
   let discountAmount = 0
-  if (coupon.type === 'percentage') {
+  if (coupon.type === ('percentage' as any)) {
     discountAmount = subtotal * (coupon.value / 100)
     // Apply max discount if specified
     if (coupon.max_discount && discountAmount > coupon.max_discount) {
