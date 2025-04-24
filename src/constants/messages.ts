@@ -77,142 +77,181 @@ export const USERS_MESSAGES = {
   LINK_IS_REQUIRED: 'Link is required',
   LINK_MUST_BE_A_STRING: 'Link must be a string',
   REACTION_USER_ID_MUST_NOT_BE_EMPTY: 'Reaction user id must not be empty',
-  INVALID_REFRESH_TOKEN: 'Invalid refresh token'
+  INVALID_REFRESH_TOKEN: 'Invalid refresh token',
+  PHONE_IS_REQUIRED: 'Phone number is required',
+  PHONE_MUST_BE_VALID: 'Phone number must be valid',
+  PHONE_ALREADY_EXISTS: 'Phone number already exists',
+  ROLE_CHANGE_SUCCESS: 'User role updated successfully',
+  SELLER_VERIFICATION_REQUIRED: 'Seller verification is required to perform this action',
+  STORE_CREATION_SUCCESS: 'Store created successfully',
+  STORE_UPDATE_SUCCESS: 'Store updated successfully',
+  SWITCH_TO_SELLER_SUCCESS: 'Switched to seller mode successfully'
 } as const
 
-export const TWEET_MESSAGE = {
-  CREATE_TWEET_SUCCESS: 'Create tweet success',
-  INVALID_TYPE: 'Invalid type',
-  INVALID_AUDIENCE: 'Invalid audience',
-  INVALID_PARENT_ID: 'Invalid parent id',
-  PARENT_ID_MUST_BE_NULL: 'Parent id must be null',
-  CONTENT_MUST_BE_A_NON_EMPTY_STRING: 'Content must be a non empty string',
-  CONTENT_MUST_BE_EMPTY_STRING: 'Content must be empty string',
-  HASHTAGS_MUST_BE_AN_ARRAY_OF_STRING: 'Hashtags must be an array of string',
-  MENTIONS_MUST_BE_AN_ARRAY_OF_USER_ID: 'Mentions must be an array of user id',
-  MEDIAS_MUST_BE_AN_ARRAY_OF_MEDIA_OBJECT: 'Medias must be an array of media object',
-  INVALID_TWEET_ID: 'Invalid tweet id',
-  TWEET_NOT_FOUND: 'Tweet not found',
-  GET_TWEET_SUCCESS: 'Get tweet success',
-  GET_TWEET_DETAILS_SUCCESS: 'Get tweet details success',
-  TWEET_IS_NOT_PUBLIC: 'Tweet is not public',
-  GET_TWEET_CHILDREN_SUCCESS: 'Get tweet children success',
-  TWEET_ID_MUST_BE_A_STRING: 'Tweet id must be a string',
-  UNAUTHORIZED: 'Unauthorized',
-  NEW_CONTENT_MUST_BE_A_NON_EMPTY_STRING: 'New content must be a non empty string',
-  GET_CONVERSATION_IN_AI_SUCCESS: 'Get conversation in AI success',
-  GET_CONVERSATION_IN_AI_FAILED: 'Get conversation in AI failed',
-  EDIT_TWEET_SUCCESS: 'Edit tweet success',
-  DELETE_TWEET_SUCCESS: 'Delete tweet success',
-  INVALID_CONTENT: 'Invalid content',
-  GET_NEW_TWEET_SUCCESS: 'Get New Feeds Success',
-  PREMIUM_USER_REQUIRED: 'Premium user required',
-  PLATINUM_USER_REQUIRED: 'Platinum user required',
-  GENERATE_TWEET_GEMINI_SUCCESS: 'Generate tweet gemini success',
-  CHAT_WITH_GEMINI_SUCCESS: 'Chat with gemini success'
+// New messages for eBay clone features
+export const PRODUCT_MESSAGE = {
+  CREATE_PRODUCT_SUCCESS: 'Create product success',
+  UPDATE_PRODUCT_SUCCESS: 'Update product success',
+  DELETE_PRODUCT_SUCCESS: 'Delete product success',
+  GET_PRODUCT_SUCCESS: 'Get product success',
+  GET_PRODUCTS_SUCCESS: 'Get products success',
+  PRODUCT_NOT_FOUND: 'Product not found',
+  INVALID_PRODUCT_ID: 'Invalid product id',
+  INVALID_SELLER_ID: 'Invalid seller id',
+  NAME_IS_REQUIRED: 'Product name is required',
+  DESCRIPTION_IS_REQUIRED: 'Product description is required',
+  PRICE_IS_REQUIRED: 'Price is required',
+  PRICE_MUST_BE_GREATER_THAN_ZERO: 'Price must be greater than zero',
+  CATEGORY_IS_REQUIRED: 'Category is required',
+  QUANTITY_IS_REQUIRED: 'Quantity is required',
+  QUANTITY_MUST_BE_GREATER_THAN_ZERO: 'Quantity must be greater than zero',
+  CONDITION_IS_REQUIRED: 'Condition is required',
+  MEDIA_IS_REQUIRED: 'At least one image is required',
+  INVALID_MEDIA_TYPE: 'Invalid media type',
+  INVALID_TAG_FORMAT: 'Invalid tag format',
+  SELLER_ONLY: 'Only sellers can perform this action',
+  UNAUTHORIZED_SELLER: 'You are not authorized to modify this product',
+  PRODUCT_ALREADY_IN_CART: 'Product already in cart',
+  INSUFFICIENT_STOCK: 'Insufficient stock available'
 } as const
 
-export const BOOKMARKS_MESSAGE = {
-  BOOKMARKS_TWEET_SUCCESS: 'Bookmarks tweet success',
-  BOOKMARK_ALREADY_EXISTS: 'Bookmarks already exists',
-  UN_BOOKMARKS_TWEET_SUCCESS: 'Un bookmarks tweet success',
-  GET_BOOKMARKS_IN_ACCOUNT_SUCCESS: 'Get bookmarks in account success'
-}
-export const LIKES_MESSAGE = {
-  LIKES_TWEET_SUCCESS: 'Likes tweets success',
-  UN_LIKES_TWEET_SUCCESS: 'Un likes tweets success',
-  ALREADY_LIKED_THIS_TWEET: 'Already liked this tweet',
-  ALREADY_UN_LIKED_THIS_TWEET: 'Already un liked this tweet',
-  GET_LIKES_SUCCESS: 'Get likes success'
-}
-export const SEARCH_MESSAGE = {
-  CONTENT_MUST_BE_STRING: 'Content must be string',
-  MEDIA_TYPE_MUST_BE_ONE_OF_MEDIA_TYPE_QUERY: `Media type must be one of ${Object.values(MediaTypeQuery).join(', ')}`,
-  LIMIT_IS_GREATER_THAN_1_AND_SMALL_20: 'Limit is greater than 1 and small 20',
-  PAGE_IS_GREATER_THAN_1_AND_SMALL_TOTAL_PAGES: 'Page is greater than 1 and small total pages',
-  FOLLOW_USER_IS_TRUE_OR_FALSE: 'Follow user is true or false',
-  SEARCH_PEOPLE_SUCCESS: 'Search people success',
-  SEARCH_TWEETS_SUCCESS: 'Search tweets success'
-}
-
-export const CONVERSATIONS_MESSAGE = {
-  GET_CONVERSATION_SUCCESSFULLY: 'Get conversation successfully',
-  EDIT_CONVERSATION_SUCCESSFULLY: 'Edit conversation successfully',
-  MESSAGE_ID_IS_REQUIRED: 'Message id is required',
-  MESSAGE_NOT_FOUND: 'Message not found',
-  DELETE_MESSAGE_IN_CONVERSATION_SUCCESSFULLY: 'Delete message in conversation successfully',
-  CONTENT_IS_REQUIRED: 'Content is required',
-  SET_EMOJI_MESSAGE_IN_CONVERSATION_SUCCESSFULLY: 'Set emoji message in conversation successfully',
-  DELETE_ALL_MESSAGE_IN_CONVERSATION_SUCCESSFULLY: 'Delete all message in conversation successfully'
-}
-export const COMMENT_MESSAGES = {
-  GET_COMMENT_SUCCESS: 'Get comment success',
-  CREATE_COMMENT_SUCCESS: 'Create comment success',
-  COMMENT_MUST_BE_A_STRING: 'Comment must be a string',
-  COMMENT_LENGTH_MUST_BE_BETWEEN_1_AND_280: 'Comment length must be between 1 and 280',
-  COMMENT_LINK_MUST_BE_AN_ARRAY: 'Comment link must be an array',
-  COMMENT_LINK_MUST_BE_AN_ARRAY_OF_MEDIA_OBJECT: 'Comment link must be an array of media object',
-  EDIT_COMMENT_SUCCESS: 'Edit comment success',
-  NO_EDIT_COMMENT: 'No edit comment',
-  DELETE_COMMENT_SUCCESS: 'Delete comment success',
-  NO_COMMENT_TO_DELETE: 'No comment to delete'
-}
-
-export const STORIES_MESSAGE = {
-  CREATE_STORY_SUCCESS: 'Create story success',
-  GET_STORY_SUCCESS: 'Get story success',
-  GET_STORY_DETAILS_SUCCESS: 'Get story details success',
-  STORY_NOT_FOUND: 'Story not found',
-  STORY_ID_MUST_BE_A_STRING: 'Story id must be a string',
-  STORY_IS_NOT_PUBLIC: 'Story is not public',
-  GET_STORY_CHILDREN_SUCCESS: 'Get story children success',
-  CAPTION_MUST_BE_A_STRING: 'Caption must be a string',
-  CONTENT_MUST_BE_A_STRING: 'Content must be a string',
-  MEDIA_URL_MUST_BE_A_STRING: 'Media url must be a string',
-  MEDIA_TYPE_MUST_BE_A_STRING: 'Media type must be a string',
-  PRIVACY_MUST_BE_AN_ARRAY: 'Privacy must be an array',
-  PRIVACY_MUST_BE_AN_ARRAY_OF_USER_ID: 'Privacy must be an array of user id',
-  STORY_ID_IS_REQUIRED: 'Story id is required',
-  STORY_NOT_FOUND_OR_NOT_PUBLIC: 'Story not found or not public',
-  DELETE_STORY_SUCCESS: 'Delete story success',
-  EDIT_STORY_SUCCESS: 'Edit story success',
-  STORY_ALREADY_EXISTS: 'Story already exists',
-  STORY_NOT_EXISTS: 'Story not exists',
-  STORY_NOT_PUBLIC: 'Story not public',
-  STORY_LINK_IS_REQUIRED: 'Story link is required',
-  STORY_LINK_MUST_BE_A_STRING: 'Story link must be a string',
-  CONTENT_MUST_NOT_BE_EMPTY: 'Content must not be empty',
-  CAPTION_MUST_BE_NOT_BE_EMPTY: 'Caption must not be empty',
-  STORY_ID_MUST_NOT_BE_EMPTY: 'Story id must not be empty',
-  VIEW_STATUS_MUST_BE_A_STRING: 'View status must be a string',
-  VIEW_STATUS_MUST_NOT_BE_EMPTY: 'View status must not be empty',
-  VIEW_AND_STATUS_STORY_SUCCESS: 'View and status story success',
-  CANNOT_VIEW_AND_STATUS_YOURSELF_STORY: 'Cannot view and status yourself story',
-  UPDATE_STORY_SUCCESS: 'Update story success',
-  GET_NEWS_FEED_STORIES_SUCCESS: 'Get news feed stories success',
-  GET_ARCHIVE_STORIES_SUCCESS: 'Get archive stories success',
-  GET_STORY_VIEWERS_SUCCESS: 'Get story viewers success',
-  REACT_STORY_SUCCESS: 'React story success',
-  REPLY_STORY_SUCCESS: 'Reply story success',
-  HIDE_USER_STORIES_SUCCESS: 'Hide user stories success',
-  STORY_IS_NOT_YOURS_SELF_YOU_CANNOT_DELETE_IT: 'Story is not yours self you cannot delete it'
-}
-
-export const PAYMENT_MESSAGE = {
-  INVALID_SUBSCRIPTION_TYPE: 'Invalid subscription type',
-  PAYMENT_SUCCESSFULLY: 'Payment successfully',
+export const ORDER_MESSAGE = {
+  CREATE_ORDER_SUCCESS: 'Order created successfully',
+  UPDATE_ORDER_SUCCESS: 'Order updated successfully',
+  GET_ORDER_SUCCESS: 'Get order details success',
+  GET_ORDERS_SUCCESS: 'Get orders success',
+  ORDER_NOT_FOUND: 'Order not found',
+  INVALID_ORDER_ID: 'Invalid order id',
+  SHIPPING_ADDRESS_REQUIRED: 'Shipping address is required',
+  PAYMENT_METHOD_REQUIRED: 'Payment method is required',
+  CART_IS_EMPTY: 'Your cart is empty',
+  UNAUTHORIZED_ORDER_ACCESS: 'You are not authorized to access this order',
+  ORDER_ALREADY_PAID: 'This order has already been paid',
+  ORDER_CANCELLED: 'Order has been cancelled',
+  CANNOT_CANCEL_SHIPPED_ORDER: 'Cannot cancel an order that has been shipped',
   PAYMENT_FAILED: 'Payment failed',
-  INTERNAL_SERVER_ERROR: 'Internal server error',
-  CONFIRM_SUCCESS: 'Confirm success',
-  UNKNOW_ERROR: 'Unknow error',
-  PAYMENT_NOT_FOUND: 'Payment not found',
-  CANNOT_CREATE_FREE_PAYMENT: 'Cannot create payment for free subscription'
-}
+  PAYMENT_SUCCESS: 'Payment successful',
+  ORDER_STATUS_UPDATED: 'Order status updated successfully',
+  TRACKING_NUMBER_ADDED: 'Tracking number added successfully',
+  CANNOT_UPDATE_DELIVERED_ORDER: 'Cannot update an order that has been delivered'
+} as const
+
+export const CART_MESSAGE = {
+  ADD_TO_CART_SUCCESS: 'Product added to cart successfully',
+  UPDATE_CART_SUCCESS: 'Cart updated successfully',
+  REMOVE_FROM_CART_SUCCESS: 'Product removed from cart successfully',
+  CLEAR_CART_SUCCESS: 'Cart cleared successfully',
+  GET_CART_SUCCESS: 'Get cart success',
+  CART_NOT_FOUND: 'Cart not found',
+  INVALID_QUANTITY: 'Invalid quantity',
+  PRODUCT_NOT_IN_CART: 'Product not in cart'
+} as const
+
+export const ADDRESS_MESSAGE = {
+  CREATE_ADDRESS_SUCCESS: 'Address created successfully',
+  UPDATE_ADDRESS_SUCCESS: 'Address updated successfully',
+  DELETE_ADDRESS_SUCCESS: 'Address deleted successfully',
+  GET_ADDRESS_SUCCESS: 'Get address success',
+  GET_ADDRESSES_SUCCESS: 'Get addresses success',
+  ADDRESS_NOT_FOUND: 'Address not found',
+  INVALID_ADDRESS_ID: 'Invalid address id',
+  NAME_IS_REQUIRED: 'Name is required',
+  PHONE_IS_REQUIRED: 'Phone number is required',
+  ADDRESS_LINE1_IS_REQUIRED: 'Address line 1 is required',
+  CITY_IS_REQUIRED: 'City is required',
+  STATE_IS_REQUIRED: 'State is required',
+  POSTAL_CODE_IS_REQUIRED: 'Postal code is required',
+  COUNTRY_IS_REQUIRED: 'Country is required',
+  UNAUTHORIZED_ADDRESS_ACCESS: 'You are not authorized to access this address',
+  DEFAULT_ADDRESS_SET: 'Default address set successfully'
+} as const
+
+export const STORE_MESSAGE = {
+  CREATE_STORE_SUCCESS: 'Store created successfully',
+  UPDATE_STORE_SUCCESS: 'Store updated successfully',
+  GET_STORE_SUCCESS: 'Get store success',
+  GET_STORES_SUCCESS: 'Get stores success',
+  STORE_NOT_FOUND: 'Store not found',
+  INVALID_STORE_ID: 'Invalid store id',
+  NAME_IS_REQUIRED: 'Store name is required',
+  DESCRIPTION_IS_REQUIRED: 'Store description is required',
+  STORE_ALREADY_EXISTS: 'You already have a store',
+  SELLER_VERIFICATION_REQUIRED: 'Seller verification is required to create a store',
+  UNAUTHORIZED_STORE_ACCESS: 'You are not authorized to access this store'
+} as const
+
+export const REVIEW_MESSAGE = {
+  CREATE_REVIEW_SUCCESS: 'Review created successfully',
+  UPDATE_REVIEW_SUCCESS: 'Review updated successfully',
+  DELETE_REVIEW_SUCCESS: 'Review deleted successfully',
+  GET_REVIEW_SUCCESS: 'Get review success',
+  GET_REVIEWS_SUCCESS: 'Get reviews success',
+  REVIEW_NOT_FOUND: 'Review not found',
+  INVALID_REVIEW_ID: 'Invalid review id',
+  RATING_IS_REQUIRED: 'Rating is required',
+  RATING_MUST_BE_BETWEEN_1_AND_5: 'Rating must be between 1 and 5',
+  COMMENT_IS_REQUIRED: 'Comment is required',
+  ALREADY_REVIEWED: 'You have already reviewed this product',
+  MUST_PURCHASE_TO_REVIEW: 'You must purchase this product to review it',
+  UNAUTHORIZED_REVIEW_ACCESS: 'You are not authorized to access this review'
+} as const
+
+export const COUPON_MESSAGE = {
+  CREATE_COUPON_SUCCESS: 'Coupon created successfully',
+  UPDATE_COUPON_SUCCESS: 'Coupon updated successfully',
+  DELETE_COUPON_SUCCESS: 'Coupon deleted successfully',
+  GET_COUPON_SUCCESS: 'Get coupon success',
+  GET_COUPONS_SUCCESS: 'Get coupons success',
+  COUPON_NOT_FOUND: 'Coupon not found',
+  INVALID_COUPON_ID: 'Invalid coupon id',
+  CODE_IS_REQUIRED: 'Coupon code is required',
+  CODE_ALREADY_EXISTS: 'Coupon code already exists',
+  VALUE_IS_REQUIRED: 'Coupon value is required',
+  EXPIRATION_IS_REQUIRED: 'Expiration date is required',
+  COUPON_EXPIRED: 'This coupon has expired',
+  COUPON_NOT_APPLICABLE: 'This coupon is not applicable to your cart',
+  COUPON_USAGE_LIMIT_REACHED: 'This coupon has reached its usage limit',
+  COUPON_APPLIED_SUCCESS: 'Coupon applied successfully',
+  COUPON_REMOVED_SUCCESS: 'Coupon removed successfully',
+  MINIMUM_PURCHASE_NOT_MET: 'Minimum purchase amount not met for this coupon'
+} as const
+
+export const DISPUTE_MESSAGE = {
+  CREATE_DISPUTE_SUCCESS: 'Dispute created successfully',
+  UPDATE_DISPUTE_SUCCESS: 'Dispute updated successfully',
+  GET_DISPUTE_SUCCESS: 'Get dispute success',
+  GET_DISPUTES_SUCCESS: 'Get disputes success',
+  DISPUTE_NOT_FOUND: 'Dispute not found',
+  INVALID_DISPUTE_ID: 'Invalid dispute id',
+  REASON_IS_REQUIRED: 'Dispute reason is required',
+  DESCRIPTION_IS_REQUIRED: 'Description is required',
+  ORDER_ALREADY_DISPUTED: 'This order already has an open dispute',
+  CANNOT_DISPUTE_UNDELIVERED: 'Cannot open dispute for undelivered order',
+  DISPUTE_TIME_EXPIRED: 'Dispute period has expired',
+  DISPUTE_RESOLVED: 'Dispute resolved successfully',
+  DISPUTE_MESSAGE_ADDED: 'Message added to dispute',
+  UNAUTHORIZED_DISPUTE_ACCESS: 'You are not authorized to access this dispute'
+} as const
+
+export const CATEGORY_MESSAGE = {
+  CREATE_CATEGORY_SUCCESS: 'Category created successfully',
+  UPDATE_CATEGORY_SUCCESS: 'Category updated successfully',
+  DELETE_CATEGORY_SUCCESS: 'Category deleted successfully',
+  GET_CATEGORY_SUCCESS: 'Get category success',
+  GET_CATEGORIES_SUCCESS: 'Get categories success',
+  CATEGORY_NOT_FOUND: 'Category not found',
+  INVALID_CATEGORY_ID: 'Invalid category id',
+  NAME_IS_REQUIRED: 'Category name is required',
+  SLUG_IS_REQUIRED: 'Category slug is required',
+  SLUG_ALREADY_EXISTS: 'Category slug already exists',
+  ADMIN_ONLY: 'Only administrators can perform this action'
+} as const
+
 export const ADMIN_MESSAGES = {
   ADMIN_PERMISSION_REQUIRED: 'Admin permission required',
   GET_USER_STATS_SUCCESS: 'Get user statistics successfully',
-  GET_TWEET_STATS_SUCCESS: 'Get tweet statistics successfully',
-  GET_INTERACTION_STATS_SUCCESS: 'Get interaction statistics successfully',
+  GET_PRODUCT_STATS_SUCCESS: 'Get product statistics successfully',
+  GET_ORDER_STATS_SUCCESS: 'Get order statistics successfully',
   GET_REVENUE_STATS_SUCCESS: 'Get revenue statistics successfully',
   GET_SYSTEM_STATS_SUCCESS: 'Get system statistics successfully',
   GET_DASHBOARD_STATS_SUCCESS: 'Get dashboard statistics successfully',
