@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import {
   useUserAddresses,
   useCreateAddress,
@@ -20,12 +20,16 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
-import { MapPin, Plus, Edit, Trash, Loader2, Home, Building, Briefcase, MapPinned } from 'lucide-react'
+import { MapPin, Plus, Edit, Trash, Loader2, Home, Building, Briefcase, MapPinned, Navigation } from 'lucide-react'
 import { CreateAddressRequest, UpdateAddressRequest, Address } from '@/types/Address.type'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { Button } from '@/Components/ui/button'
+import MapWithAddress from '@/components/ui/map/mapWithAddress'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Skeleton } from '@/components/ui/skeleton'
+import { AppContext } from '@/Contexts/app.context'
 
 // Form validation schema for address
 const addressSchema = yup.object().shape({
@@ -44,6 +48,14 @@ export default function Addresses() {
   const [isAddingAddress, setIsAddingAddress] = useState(false)
   const [editingAddress, setEditingAddress] = useState<Address | null>(null)
   const [deletingAddressId, setDeletingAddressId] = useState<string | null>(null)
+  const [coordinates, setCoordinates] = useState<{ latitude: number | null; longitude: number | null }>({
+    latitude: null,
+    longitude: null
+  })
+
+  // Get user information
+  const profile = useContext(AppContext).profile
+  const userId = profile?._id
 
   // Fetch user addresses
   const { data: addressesData, isLoading } = useUserAddresses()
@@ -90,6 +102,27 @@ export default function Addresses() {
     setValue('postal_code', address.postal_code)
     setValue('country', address.country)
     setValue('is_default', address.is_default)
+
+    // Set coordinates if available
+    if (address.latitude && address.longitude) {
+      setCoordinates({
+        latitude: address.latitude,
+        longitude: address.longitude
+      })
+    } else {
+      // Set default coordinates based on location data if present
+      if (address.location?.coordinates && address.location.coordinates.length === 2) {
+        setCoordinates({
+          latitude: address.location.coordinates[1],
+          longitude: address.location.coordinates[0]
+        })
+      } else {
+        setCoordinates({
+          latitude: null,
+          longitude: null
+        })
+      }
+    }
   }
 
   // Close dialog and reset form
@@ -97,12 +130,25 @@ export default function Addresses() {
     setIsAddingAddress(false)
     setEditingAddress(null)
     setDeletingAddressId(null)
+    setCoordinates({ latitude: null, longitude: null })
     reset()
   }
 
   // Handle create address
   const handleCreateAddress = (data: CreateAddressRequest) => {
-    createAddressMutate(data, {
+    if (!coordinates.latitude || !coordinates.longitude) {
+      toast.error('Please select a location on the map')
+      return
+    }
+
+    const addressData: CreateAddressRequest = {
+      ...data,
+      latitude: coordinates.latitude,
+      longitude: coordinates.longitude,
+      user_id: userId
+    }
+
+    createAddressMutate(addressData, {
       onSuccess: () => {
         toast.success('Address added successfully')
         closeDialog()
@@ -117,7 +163,18 @@ export default function Addresses() {
   const handleUpdateAddress = (data: UpdateAddressRequest) => {
     if (!editingAddress) return
 
-    updateAddressMutate(data, {
+    if (!coordinates.latitude || !coordinates.longitude) {
+      toast.error('Please select a location on the map')
+      return
+    }
+
+    const addressData: UpdateAddressRequest = {
+      ...data,
+      latitude: coordinates.latitude,
+      longitude: coordinates.longitude
+    }
+
+    updateAddressMutate(addressData, {
       onSuccess: () => {
         toast.success('Address updated successfully')
         closeDialog()
@@ -158,6 +215,29 @@ export default function Addresses() {
     )
   }
 
+  // Load coordinates when editing address
+  useEffect(() => {
+    if (editingAddress) {
+      if (editingAddress.latitude && editingAddress.longitude) {
+        setCoordinates({
+          latitude: editingAddress.latitude,
+          longitude: editingAddress.longitude
+        })
+      } else if (editingAddress.location?.coordinates && editingAddress.location.coordinates.length === 2) {
+        setCoordinates({
+          latitude: editingAddress.location.coordinates[1],
+          longitude: editingAddress.location.coordinates[0]
+        })
+      }
+    } else {
+      // Set default coordinates for Bangkok, Thailand for new addresses
+      setCoordinates({
+        latitude: 13.7563,
+        longitude: 100.5018
+      })
+    }
+  }, [editingAddress])
+
   // Get address type icon
   const getAddressTypeIcon = (address: Address) => {
     if (address.name.toLowerCase().includes('work') || address.name.toLowerCase().includes('office')) {
@@ -192,8 +272,17 @@ export default function Addresses() {
           {Array(2)
             .fill(0)
             .map((_, i) => (
-              <Card key={i} className='bg-gray-50 border border-dashed animate-pulse'>
-                <CardContent className='p-6 h-48'></CardContent>
+              <Card key={i} className='bg-gray-50 border border-dashed'>
+                <CardContent className='p-6'>
+                  <div className='flex justify-between mb-4'>
+                    <Skeleton className='h-6 w-32' />
+                    <Skeleton className='h-6 w-16' />
+                  </div>
+                  <Skeleton className='h-4 w-full mb-2' />
+                  <Skeleton className='h-4 w-full mb-2' />
+                  <Skeleton className='h-4 w-2/3 mb-4' />
+                  <Skeleton className='h-8 w-28' />
+                </CardContent>
               </Card>
             ))}
         </div>
@@ -254,6 +343,17 @@ export default function Addresses() {
                     {address.city}, {address.state} {address.postal_code}
                   </p>
                   <p>{address.country}</p>
+
+                  {(address.latitude ||
+                    (address.location?.coordinates && address.location.coordinates.length === 2)) && (
+                    <p className='text-xs text-gray-500 flex items-center mt-1'>
+                      <Navigation className='h-3 w-3 mr-1' />
+                      Location:{' '}
+                      {address.latitude
+                        ? `${address.latitude.toFixed(6)}, ${address.longitude?.toFixed(6)}`
+                        : `${address.location?.coordinates[1].toFixed(6)}, ${address.location?.coordinates[0].toFixed(6)}`}
+                    </p>
+                  )}
                 </div>
 
                 {!address.is_default && (
@@ -282,7 +382,7 @@ export default function Addresses() {
           else if (!editingAddress) setIsAddingAddress(open)
         }}
       >
-        <DialogContent className='sm:max-w-[550px]'>
+        <DialogContent className='sm:max-w-[650px] max-h-[90vh] overflow-y-auto'>
           <DialogHeader>
             <DialogTitle>{editingAddress ? 'Edit Address' : 'Add New Address'}</DialogTitle>
             <DialogDescription>
@@ -383,6 +483,25 @@ export default function Addresses() {
                 </div>
               </div>
 
+              <div>
+                <Label>Select Location on Map</Label>
+                <Alert className='mb-2'>
+                  <MapPin className='h-4 w-4' />
+                  <AlertTitle>Pick a location</AlertTitle>
+                  <AlertDescription>Click on the map to set your precise location for delivery.</AlertDescription>
+                </Alert>
+                <div className='h-[300px] w-full mt-2 border rounded-md overflow-hidden'>
+                  <MapWithAddress setCoordinates={setCoordinates} />
+                </div>
+                {coordinates.latitude && coordinates.longitude ? (
+                  <p className='text-xs text-gray-500 mt-1'>
+                    Selected coordinates: {coordinates.latitude.toFixed(6)}, {coordinates.longitude.toFixed(6)}
+                  </p>
+                ) : (
+                  <p className='text-xs text-red-500 mt-1'>Please select a location on the map</p>
+                )}
+              </div>
+
               <div className='flex items-center space-x-2'>
                 <Checkbox id='is_default' {...register('is_default')} />
                 <Label htmlFor='is_default' className='text-sm font-normal'>
@@ -395,7 +514,10 @@ export default function Addresses() {
               <Button type='button' variant='outline' onClick={closeDialog}>
                 Cancel
               </Button>
-              <Button type='submit' disabled={isCreating || isUpdating}>
+              <Button
+                type='submit'
+                disabled={isCreating || isUpdating || !coordinates.latitude || !coordinates.longitude}
+              >
                 {(isCreating || isUpdating) && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
                 {editingAddress ? 'Update Address' : 'Add Address'}
               </Button>

@@ -37,7 +37,8 @@ import {
   Package,
   ArrowUpRight,
   ArrowDownRight,
-  Activity
+  Activity,
+  Calendar
 } from 'lucide-react'
 import { Button } from '@/Components/ui/button'
 
@@ -199,16 +200,12 @@ export default function SellerAnalytics() {
             </PopoverTrigger>
             <PopoverContent className='w-auto p-0' align='end'>
               <Calendar
-                initialFocus
                 mode='range'
-                defaultMonth={dateRange?.from}
-                selected={dateRange}
                 onSelect={(range: any) => {
                   if (range?.from && range?.to) {
                     setDateRange(range)
                   }
                 }}
-                numberOfMonths={2}
               />
             </PopoverContent>
           </Popover>
