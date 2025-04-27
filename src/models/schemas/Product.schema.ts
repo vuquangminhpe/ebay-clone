@@ -46,6 +46,10 @@ interface ProductType {
   shipping_price: number
   free_shipping: boolean
   views: number
+  // Thêm các trường mới
+  isAuction: boolean
+  auctionEndTime?: Date
+  currentBid?: number
   created_at?: Date
   updated_at?: Date
 }
@@ -66,6 +70,10 @@ export default class Product {
   shipping_price: number
   free_shipping: boolean
   views: number
+  // Thêm các trường mới
+  isAuction: boolean
+  auctionEndTime?: Date
+  currentBid?: number
   created_at: Date
   updated_at: Date
 
@@ -85,6 +93,9 @@ export default class Product {
     shipping_price,
     free_shipping,
     views,
+    isAuction,
+    auctionEndTime,
+    currentBid,
     created_at,
     updated_at
   }: ProductType) {
@@ -104,6 +115,9 @@ export default class Product {
     this.shipping_price = shipping_price
     this.free_shipping = free_shipping
     this.views = views || 0
+    this.isAuction = isAuction || false
+    this.auctionEndTime = auctionEndTime
+    this.currentBid = currentBid
     this.created_at = created_at || date
     this.updated_at = updated_at || date
   }

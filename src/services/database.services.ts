@@ -1,7 +1,6 @@
 import { MongoClient, Db, Collection } from 'mongodb'
 import User from '../models/schemas/User.schema'
 
-// Import new schemas for eBay clone
 import Product from '../models/schemas/Product.schema'
 import Order from '../models/schemas/Order.schema'
 import Cart from '../models/schemas/Cart.schema'
@@ -14,7 +13,15 @@ import { envConfig } from '~/constants/config'
 import Address from '~/models/schemas/Address.chema'
 import VideoStatus from '~/models/schemas/VideoStatus.schema'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
-
+import Bid from '../models/schemas/Bid.schema'
+import Inventory from '../models/schemas/Inventory.schema'
+import Feedback from '../models/schemas/Feedback.schema'
+import Message from '../models/schemas/Message.schema'
+import ReturnRequest from '../models/schemas/ReturnRequest.schema'
+import PaymentMethod from '../models/schemas/PaymentMethod.schema'
+import ShippingMethod from '../models/schemas/ShippingMethod.schema'
+import Transaction from '../models/schemas/Transaction.schema'
+import Shipment from '../models/schemas/Shipment.schema'
 const uri = envConfig.mongodb_url
 const dbName = envConfig.db_name
 
@@ -95,9 +102,15 @@ class DatabaseService {
   }
 
   async indexAddresses() {
-    const existsUserIndex = await this.addresses.indexExists('user_id_1')
-    if (!existsUserIndex) {
+    const existsUserIdIndex = await this.addresses.indexExists('user_id_1')
+    if (!existsUserIdIndex) {
       this.addresses.createIndex({ user_id: 1 })
+    }
+
+    // Thêm geospatial index
+    const existsLocationIndex = await this.addresses.indexExists('location_2dsphere')
+    if (!existsLocationIndex) {
+      this.addresses.createIndex({ location: '2dsphere' })
     }
   }
 
@@ -157,6 +170,126 @@ class DatabaseService {
   }
   get refreshToken(): Collection<RefreshToken> {
     return this.db.collection('refreshToken')
+  }
+  get bids(): Collection<Bid> {
+    return this.db.collection('bids')
+  }
+
+  get inventories(): Collection<Inventory> {
+    return this.db.collection('inventories')
+  }
+
+  get feedbacks(): Collection<Feedback> {
+    return this.db.collection('feedbacks')
+  }
+
+  get messages(): Collection<Message> {
+    return this.db.collection('messages')
+  }
+
+  get returnRequests(): Collection<ReturnRequest> {
+    return this.db.collection('return_requests')
+  }
+  get paymentMethods(): Collection<PaymentMethod> {
+    return this.db.collection('payment_methods')
+  }
+
+  get shippingMethods(): Collection<ShippingMethod> {
+    return this.db.collection('shipping_methods')
+  }
+
+  get transactions(): Collection<Transaction> {
+    return this.db.collection('transactions')
+  }
+
+  get shipments(): Collection<Shipment> {
+    return this.db.collection('shipments')
+  }
+
+  // Thêm vào phương thức connect để tạo indexes
+  async indexPaymentMethods() {
+    const existsUserIndex = await this.paymentMethods.indexExists('user_id_1')
+    if (!existsUserIndex) {
+      this.paymentMethods.createIndex({ user_id: 1 })
+    }
+  }
+
+  async indexTransactions() {
+    const existsOrderIndex = await this.transactions.indexExists('order_id_1')
+    if (!existsOrderIndex) {
+      this.transactions.createIndex({ order_id: 1 })
+    }
+
+    const existsUserIndex = await this.transactions.indexExists('user_id_1')
+    if (!existsUserIndex) {
+      this.transactions.createIndex({ user_id: 1 })
+    }
+
+    const existsSellerIndex = await this.transactions.indexExists('seller_id_1')
+    if (!existsSellerIndex) {
+      this.transactions.createIndex({ seller_id: 1 })
+    }
+  }
+
+  async indexShipments() {
+    const existsOrderIndex = await this.shipments.indexExists('order_id_1')
+    if (!existsOrderIndex) {
+      this.shipments.createIndex({ order_id: 1 }, { unique: true })
+    }
+
+    const existsTrackingIndex = await this.shipments.indexExists('tracking_number_1')
+    if (!existsTrackingIndex) {
+      this.shipments.createIndex({ tracking_number: 1 }, { sparse: true })
+    }
+  }
+  async indexBids() {
+    const existsProductIndex = await this.bids.indexExists('product_id_1')
+    if (!existsProductIndex) {
+      this.bids.createIndex({ product_id: 1 })
+    }
+
+    const existsBidderIndex = await this.bids.indexExists('bidder_id_1')
+    if (!existsBidderIndex) {
+      this.bids.createIndex({ bidder_id: 1 })
+    }
+  }
+
+  async indexInventories() {
+    const existsProductIndex = await this.inventories.indexExists('product_id_1')
+    if (!existsProductIndex) {
+      this.inventories.createIndex({ product_id: 1 }, { unique: true })
+    }
+  }
+
+  async indexMessages() {
+    const existsSenderIndex = await this.messages.indexExists('sender_id_1_receiver_id_1')
+    if (!existsSenderIndex) {
+      this.messages.createIndex({ sender_id: 1, receiver_id: 1 })
+    }
+
+    const existsReceiverIndex = await this.messages.indexExists('receiver_id_1_read_1')
+    if (!existsReceiverIndex) {
+      this.messages.createIndex({ receiver_id: 1, read: 1 })
+    }
+  }
+
+  async indexFeedbacks() {
+    const existsSellerIndex = await this.feedbacks.indexExists('seller_id_1')
+    if (!existsSellerIndex) {
+      this.feedbacks.createIndex({ seller_id: 1 })
+    }
+  }
+
+  async indexReturnRequests() {
+    const existsOrderIndex = await this.returnRequests.indexExists('order_id_1')
+    if (!existsOrderIndex) {
+      this.returnRequests.createIndex({ order_id: 1 })
+    }
+
+    const existsUserIndex = await this.returnRequests.indexExists('user_id_1')
+    if (!existsUserIndex) {
+      this.returnRequests.createIndex({ user_id: 1 })
+    }
   }
 }
 

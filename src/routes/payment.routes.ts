@@ -1,82 +1,78 @@
+// src/routes/payment.routes.ts
 import { Router } from 'express'
-import {
-  capturePaypalPaymentController,
-  createPaypalPaymentController,
-  getOrderPaymentsController,
-  getPaymentStatusController,
-  paypalWebhookController,
-  refundPaymentController
-} from '../controllers/payment.controllers'
 import { AccessTokenValidator, verifiedUserValidator } from '../middlewares/users.middlewares'
 import { wrapAsync } from '../utils/handler'
+import {
+  addPaymentMethodController,
+  capturePaypalPaymentController,
+  createPaypalOrderController,
+  deletePaymentMethodController,
+  getSellerTransactionsController,
+  getUserPaymentMethodsController,
+  getUserTransactionsController,
+  setDefaultPaymentMethodController
+} from '../controllers/payment.controllers'
 
 const paymentRouter = Router()
 
+// Public routes for PayPal flow (non-authenticated)
 /**
- * @description Create a PayPal payment for an order
- * @route POST /payments/paypal/order/:order_id
- * @body return_url - URL to redirect on successful payment
- * @body cancel_url - URL to redirect on cancelled payment
- * @access Private - Buyer of order only
+ * @description Create PayPal order
+ * @route POST /payments/paypal/create-order
+ * @access Public
  */
-paymentRouter.post(
-  '/paypal/order/:order_id',
-  AccessTokenValidator,
-  verifiedUserValidator,
-  wrapAsync(createPaypalPaymentController)
-)
+paymentRouter.post('/paypal/create-order', wrapAsync(createPaypalOrderController))
+
+// Protected routes - require authentication
+paymentRouter.use(AccessTokenValidator, verifiedUserValidator)
 
 /**
- * @description Capture a PayPal payment after approval
- * @route POST /payments/paypal/capture/:order_id
- * @body paypal_order_id - PayPal order ID from approval process
+ * @description Add a payment method
+ * @route POST /payments/methods
  * @access Private
  */
-paymentRouter.post(
-  '/paypal/capture/:order_id',
-  AccessTokenValidator,
-  verifiedUserValidator,
-  wrapAsync(capturePaypalPaymentController)
-)
+paymentRouter.post('/methods', wrapAsync(addPaymentMethodController))
 
 /**
- * @description Get payment status
- * @route GET /payments/:payment_id
- * @access Private - Buyer of order, seller of items in order, or admin
+ * @description Get user's payment methods
+ * @route GET /payments/methods
+ * @access Private
  */
-paymentRouter.get('/:payment_id', AccessTokenValidator, verifiedUserValidator, wrapAsync(getPaymentStatusController))
+paymentRouter.get('/methods', wrapAsync(getUserPaymentMethodsController))
 
 /**
- * @description Get all payments for an order
- * @route GET /payments/order/:order_id
- * @access Private - Buyer of order, seller of items in order, or admin
+ * @description Set default payment method
+ * @route PUT /payments/methods/:payment_method_id/default
+ * @access Private
  */
-paymentRouter.get(
-  '/order/:order_id',
-  AccessTokenValidator,
-  verifiedUserValidator,
-  wrapAsync(getOrderPaymentsController)
-)
+paymentRouter.put('/methods/:payment_method_id/default', wrapAsync(setDefaultPaymentMethodController))
 
 /**
- * @description Refund a payment
- * @route POST /payments/:payment_id/refund
- * @body amount - Optional amount for partial refund
- * @body reason - Optional reason for refund
- * @access Private - Seller of items in order or admin only
+ * @description Delete payment method
+ * @route DELETE /payments/methods/:payment_method_id
+ * @access Private
  */
-paymentRouter.post(
-  '/:payment_id/refund',
-  AccessTokenValidator,
-  verifiedUserValidator,
-  wrapAsync(refundPaymentController)
-)
+paymentRouter.delete('/methods/:payment_method_id', wrapAsync(deletePaymentMethodController))
 
 /**
- * @description Handle PayPal webhooks
- * @route POST /payments/webhooks/paypal
- * @access Public - Used by PayPal for notifications
+ * @description Capture PayPal payment
+ * @route POST /payments/paypal/capture
+ * @access Private
  */
-paymentRouter.post('/webhooks/paypal', wrapAsync(paypalWebhookController))
+paymentRouter.post('/paypal/capture', wrapAsync(capturePaypalPaymentController))
+
+/**
+ * @description Get user transactions
+ * @route GET /payments/transactions/buyer
+ * @access Private
+ */
+paymentRouter.get('/transactions/buyer', wrapAsync(getUserTransactionsController))
+
+/**
+ * @description Get seller transactions
+ * @route GET /payments/transactions/seller
+ * @access Private
+ */
+paymentRouter.get('/transactions/seller', wrapAsync(getSellerTransactionsController))
 
 export default paymentRouter

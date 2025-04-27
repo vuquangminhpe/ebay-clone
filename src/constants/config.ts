@@ -40,5 +40,8 @@ export const envConfig = {
   client_url: process.env.CLIENT_URL,
   token_expiry_seconds: parseInt(process.env.DB_REFRESH_TOKENS_COLLECTION || '604800'),
 
-  mongodb_url: process.env.MONGODB_URI as string
+  mongodb_url: process.env.MONGODB_URI as string,
+  paypal_environment: process.env.PAYPAL_ENVIRONMENT as string,
+  paypal_client_id: process.env.PAYPAL_CLIENT_ID as string,
+  paypal_client_secret: process.env.PAYPAL_CLIENT_SECRET as string
 }

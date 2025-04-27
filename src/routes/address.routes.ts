@@ -2,6 +2,7 @@ import { Router } from 'express'
 import {
   createAddressController,
   deleteAddressController,
+  findNearbyAddressesController,
   getAddressController,
   getUserAddressesController,
   setDefaultAddressController,
@@ -61,5 +62,10 @@ addressRouter.delete('/:address_id', wrapAsync(deleteAddressController))
  * @access Private
  */
 addressRouter.post('/default', setDefaultAddressValidator, wrapAsync(setDefaultAddressController))
-
+/**
+ * @description Find addresses near a location
+ * @route GET /addresses/nearby
+ * @access Private
+ */
+addressRouter.get('/nearby', AccessTokenValidator, verifiedUserValidator, wrapAsync(findNearbyAddressesController))
 export default addressRouter

@@ -1,277 +1,227 @@
+// src/controllers/payment.controllers.ts
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { ObjectId } from 'mongodb'
 import HTTP_STATUS from '../constants/httpStatus'
 import { TokenPayload } from '../models/request/User.request'
-import orderService from '../services/orders.services'
-import paymentService, { PaymentProvider } from '../services/payment.services'
-import { OrderStatus } from '../constants/enums'
-import { ErrorWithStatus } from '../models/Errors'
+import paymentService from '../services/payment.services'
+import { PaymentMethodTypes } from '../models/schemas/PaymentMethod.schema'
+import { PaymentProvider, TransactionStatus, TransactionTypes } from '../models/schemas/Transaction.schema'
 
-export const createPaypalPaymentController = async (req: Request, res: Response) => {
-  try {
-    const { user_id } = req.decode_authorization as TokenPayload
-    const { order_id } = req.params
-    const { return_url, cancel_url } = req.body
-
-    // Validate required fields
-    if (!return_url || !cancel_url) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({
-        message: 'Return URL and cancel URL are required'
-      })
-    }
-
-    // Get order details
-    const order = await orderService.getOrderById(order_id)
-
-    if (!order) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
-        message: 'Order not found'
-      })
-    }
-
-    // Check if order belongs to the user
-    if (order.buyer_id.toString() !== user_id) {
-      return res.status(HTTP_STATUS.FORBIDDEN).json({
-        message: 'You are not authorized to make payment for this order'
-      })
-    }
-
-    // Check if order is in correct status for payment
-    if (order.status !== OrderStatus.PENDING) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({
-        message: `Payment cannot be processed. Order status is ${order.status}`
-      })
-    }
-
-    // Create PayPal payment
-    const payment = await paymentService.createPayPalPayment(order, return_url, cancel_url)
-
-    return res.status(HTTP_STATUS.OK).json({
-      message: 'Payment initiated successfully',
-      result: payment
-    })
-  } catch (error) {
-    console.error('Create PayPal payment error:', error)
-    return res.status(error instanceof ErrorWithStatus ? error.status : HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-      message: error instanceof Error ? error.message : 'Failed to create payment'
-    })
-  }
+// Define request body interfaces
+interface AddPaymentMethodReqBody {
+  type: PaymentMethodTypes
+  details: any
+  set_default?: boolean
 }
 
-export const capturePaypalPaymentController = async (req: Request, res: Response) => {
+interface CreatePaypalOrderReqBody {
+  amount: number
+  currency?: string
+  description?: string
+}
+
+interface CapturePaypalPaymentReqBody {
+  order_id: string
+}
+
+// Define request params interface
+interface PaymentMethodParams extends ParamsDictionary {
+  payment_method_id: string
+}
+
+export const addPaymentMethodController = async (
+  req: Request<ParamsDictionary, any, AddPaymentMethodReqBody>,
+  res: Response
+) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const { type, details, set_default } = req.body
+
   try {
-    const { order_id } = req.params
-    const { paypal_order_id } = req.body
+    const result = await paymentService.addPaymentMethod({
+      user_id,
+      type,
+      details,
+      set_default
+    })
 
-    if (!paypal_order_id) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({
-        message: 'PayPal order ID is required'
-      })
-    }
-
-    // Capture the payment
-    const result = await paymentService.capturePayPalPayment(paypal_order_id)
-
-    return res.status(HTTP_STATUS.OK).json({
-      message: 'Payment captured successfully',
+    return res.status(HTTP_STATUS.CREATED).json({
+      message: 'Payment method added successfully',
       result
     })
   } catch (error) {
+    console.error('Add payment method error:', error)
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      message: 'Failed to add payment method'
+    })
+  }
+}
+
+export const getUserPaymentMethodsController = async (req: Request, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+
+  try {
+    const paymentMethods = await paymentService.getUserPaymentMethods(user_id)
+
+    return res.status(HTTP_STATUS.OK).json({
+      message: 'Payment methods retrieved successfully',
+      result: paymentMethods
+    })
+  } catch (error) {
+    console.error('Get payment methods error:', error)
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      message: 'Failed to get payment methods'
+    })
+  }
+}
+
+export const setDefaultPaymentMethodController = async (req: Request<PaymentMethodParams>, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const { payment_method_id } = req.params
+
+  try {
+    const result = await paymentService.setDefaultPaymentMethod(user_id, payment_method_id)
+
+    return res.status(HTTP_STATUS.OK).json({
+      message: 'Default payment method set successfully',
+      result
+    })
+  } catch (error) {
+    console.error('Set default payment method error:', error)
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      message: 'Failed to set default payment method'
+    })
+  }
+}
+
+export const deletePaymentMethodController = async (req: Request<PaymentMethodParams>, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const { payment_method_id } = req.params
+
+  try {
+    await paymentService.deletePaymentMethod(user_id, payment_method_id)
+
+    return res.status(HTTP_STATUS.OK).json({
+      message: 'Payment method deleted successfully'
+    })
+  } catch (error) {
+    console.error('Delete payment method error:', error)
+    return res.status(error instanceof Error ? HTTP_STATUS.BAD_REQUEST : HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      message: error instanceof Error ? error.message : 'Failed to delete payment method'
+    })
+  }
+}
+
+export const createPaypalOrderController = async (
+  req: Request<ParamsDictionary, any, CreatePaypalOrderReqBody>,
+  res: Response
+) => {
+  const { amount, currency, description } = req.body
+
+  try {
+    const paypalOrder = await paymentService.createPaypalOrder(amount, currency, description)
+
+    return res.status(HTTP_STATUS.OK).json({
+      message: 'PayPal order created successfully',
+      result: paypalOrder
+    })
+  } catch (error) {
+    console.error('Create PayPal order error:', error)
+    return res.status(error instanceof Error ? HTTP_STATUS.BAD_REQUEST : HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      message: error instanceof Error ? error.message : 'Failed to create PayPal order'
+    })
+  }
+}
+
+export const capturePaypalPaymentController = async (
+  req: Request<ParamsDictionary, any, CapturePaypalPaymentReqBody>,
+  res: Response
+) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const { order_id } = req.body
+
+  try {
+    // Capture the payment
+    const captureData = await paymentService.capturePaypalPayment(order_id)
+
+    // Create transaction record
+    const transaction = await paymentService.createTransaction({
+      user_id,
+      amount: parseFloat(captureData.purchase_units[0].amount.value),
+      type: TransactionTypes.PAYMENT,
+      provider: PaymentProvider.PAYPAL,
+      provider_transaction_id: captureData.id,
+      provider_fee: captureData.purchase_units[0].payments.captures[0].seller_receivable_breakdown?.paypal_fee?.value
+        ? parseFloat(captureData.purchase_units[0].payments.captures[0].seller_receivable_breakdown.paypal_fee.value)
+        : undefined,
+      metadata: captureData
+    })
+
+    // Update transaction status
+    await paymentService.updateTransactionStatus(transaction._id.toString(), TransactionStatus.COMPLETED)
+
+    return res.status(HTTP_STATUS.OK).json({
+      message: 'PayPal payment captured successfully',
+      result: {
+        capture_details: captureData,
+        transaction
+      }
+    })
+  } catch (error) {
     console.error('Capture PayPal payment error:', error)
-    return res.status(error instanceof ErrorWithStatus ? error.status : HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-      message: error instanceof Error ? error.message : 'Failed to capture payment'
+    return res.status(error instanceof Error ? HTTP_STATUS.BAD_REQUEST : HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      message: error instanceof Error ? error.message : 'Failed to capture PayPal payment'
     })
   }
 }
 
-export const getPaymentStatusController = async (req: Request, res: Response) => {
+export const getUserTransactionsController = async (req: Request, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const { type, status, page = '1', limit = '10', sort = 'created_at', order = 'desc' } = req.query
+
   try {
-    const { payment_id } = req.params
+    const result = await paymentService.getUserTransactions(user_id, {
+      type: type as TransactionTypes,
+      status: status as TransactionStatus,
+      page: parseInt(page as string),
+      limit: parseInt(limit as string),
+      sort: sort as string,
+      order: order as 'asc' | 'desc'
+    })
 
-    // Get payment details
-    const payment = await paymentService.getPaymentById(payment_id)
-
-    if (!payment) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
-        message: 'Payment not found'
-      })
-    }
-
-    // Check if payment belongs to the authenticated user
-    const { user_id, role } = req.decode_authorization as TokenPayload
-
-    const order = await orderService.getOrderById(payment.order_id.toString())
-
-    if (!order) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
-        message: 'Order for this payment not found'
-      })
-    }
-
-    const isBuyer = order.buyer_id.toString() === user_id
-    const isSeller =
-      role === 'seller' &&
-      order.items.some((item: { seller_id: { toString: () => string } }) => item.seller_id.toString() === user_id)
-    const isAdmin = role === 'admin'
-
-    if (!isBuyer && !isSeller && !isAdmin) {
-      return res.status(HTTP_STATUS.FORBIDDEN).json({
-        message: 'You are not authorized to view this payment'
-      })
-    }
-
-    // For PayPal payments, verify current status
-    if (payment.provider === PaymentProvider.PAYPAL) {
-      const paypalStatus = await paymentService.verifyPayPalPayment(payment.provider_order_id)
-
-      // Return combined information
-      return res.status(HTTP_STATUS.OK).json({
-        message: 'Payment status retrieved successfully',
-        result: {
-          ...payment,
-          current_provider_status: paypalStatus.status
-        }
-      })
-    }
-
-    // For other payment providers
     return res.status(HTTP_STATUS.OK).json({
-      message: 'Payment status retrieved successfully',
-      result: payment
+      message: 'User transactions retrieved successfully',
+      result
     })
   } catch (error) {
-    console.error('Get payment status error:', error)
-    return res.status(error instanceof ErrorWithStatus ? error.status : HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-      message: error instanceof Error ? error.message : 'Failed to get payment status'
+    console.error('Get user transactions error:', error)
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      message: 'Failed to get user transactions'
     })
   }
 }
 
-export const getOrderPaymentsController = async (req: Request, res: Response) => {
+export const getSellerTransactionsController = async (req: Request, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const { type, status, page = '1', limit = '10', sort = 'created_at', order = 'desc' } = req.query
+
   try {
-    const { order_id } = req.params
-
-    // Get order details to check authorization
-    const order = await orderService.getOrderById(order_id)
-
-    if (!order) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
-        message: 'Order not found'
-      })
-    }
-
-    // Check if user is authorized to view order payments
-    const { user_id, role } = req.decode_authorization as TokenPayload
-
-    const isBuyer = order.buyer_id.toString() === user_id
-    const isSeller =
-      role === 'seller' &&
-      order.items.some((item: { seller_id: { toString: () => string } }) => item.seller_id.toString() === user_id)
-    const isAdmin = role === 'admin'
-
-    if (!isBuyer && !isSeller && !isAdmin) {
-      return res.status(HTTP_STATUS.FORBIDDEN).json({
-        message: 'You are not authorized to view payments for this order'
-      })
-    }
-
-    // Get all payments for the order
-    const payments = await paymentService.getPaymentsForOrder(order_id)
+    const result = await paymentService.getSellerTransactions(user_id, {
+      type: type as TransactionTypes,
+      status: status as TransactionStatus,
+      page: parseInt(page as string),
+      limit: parseInt(limit as string),
+      sort: sort as string,
+      order: order as 'asc' | 'desc'
+    })
 
     return res.status(HTTP_STATUS.OK).json({
-      message: 'Order payments retrieved successfully',
-      result: payments
+      message: 'Seller transactions retrieved successfully',
+      result
     })
   } catch (error) {
-    console.error('Get order payments error:', error)
-    return res.status(error instanceof ErrorWithStatus ? error.status : HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-      message: error instanceof Error ? error.message : 'Failed to get order payments'
-    })
-  }
-}
-
-export const refundPaymentController = async (req: Request, res: Response) => {
-  try {
-    const { payment_id } = req.params
-    const { amount, reason } = req.body
-    const { role } = req.decode_authorization as TokenPayload
-
-    // Only admin or seller can issue refunds
-    if (role !== 'admin' && role !== 'seller') {
-      return res.status(HTTP_STATUS.FORBIDDEN).json({
-        message: 'You are not authorized to issue refunds'
-      })
-    }
-
-    // Get payment details
-    const payment = await paymentService.getPaymentById(payment_id)
-
-    if (!payment) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
-        message: 'Payment not found'
-      })
-    }
-
-    // If a seller is refunding, ensure they are refunding their own sale
-    if (role === 'seller') {
-      const { user_id } = req.decode_authorization as TokenPayload
-      const order = await orderService.getOrderById(payment.order_id.toString())
-
-      if (!order) {
-        return res.status(HTTP_STATUS.NOT_FOUND).json({
-          message: 'Order for this payment not found'
-        })
-      }
-
-      const isSellerProduct = order.items.some(
-        (item: { seller_id: { toString: () => string } }) => item.seller_id.toString() === user_id
-      )
-
-      if (!isSellerProduct) {
-        return res.status(HTTP_STATUS.FORBIDDEN).json({
-          message: 'You can only refund payments for your own products'
-        })
-      }
-    }
-
-    // Process the refund based on the payment provider
-    if (payment.provider === PaymentProvider.PAYPAL) {
-      const result = await paymentService.refundPayPalPayment(payment_id, amount, reason)
-
-      return res.status(HTTP_STATUS.OK).json({
-        message: 'Payment refunded successfully',
-        result
-      })
-    } else {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({
-        message: `Refunds for ${payment.provider} payments are not implemented`
-      })
-    }
-  } catch (error) {
-    console.error('Refund payment error:', error)
-    return res.status(error instanceof ErrorWithStatus ? error.status : HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-      message: error instanceof Error ? error.message : 'Failed to refund payment'
-    })
-  }
-}
-
-export const paypalWebhookController = async (req: Request, res: Response) => {
-  try {
-    // Process the webhook data
-    await paymentService.processPayPalWebhook(req.body)
-
-    // Always return 200 to PayPal to acknowledge receipt
-    return res.status(HTTP_STATUS.OK).json({
-      message: 'Webhook received successfully'
-    })
-  } catch (error) {
-    console.error('PayPal webhook error:', error)
-
-    // Log the error but still return 200 to PayPal
-    // This prevents PayPal from retrying the webhook unnecessarily
-    return res.status(HTTP_STATUS.OK).json({
-      message: 'Webhook received with errors'
+    console.error('Get seller transactions error:', error)
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      message: 'Failed to get seller transactions'
     })
   }
 }

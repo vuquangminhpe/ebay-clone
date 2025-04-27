@@ -1,26 +1,135 @@
 import { ObjectId } from 'mongodb'
 import databaseService from './database.services'
-import { CreateAddressReqBody, UpdateAddressReqBody } from '../models/request/Address.request'
+import { UpdateAddressReqBody } from '../models/request/Address.request'
 import Address from '~/models/schemas/Address.chema'
+import geocodingService from './geocoding.services'
 
 class AddressService {
-  async createAddress(payload: CreateAddressReqBody & { user_id: ObjectId }) {
+  async createAddress({
+    user_id,
+    name,
+    phone,
+    address_line1,
+    address_line2,
+    city,
+    state,
+    postal_code,
+    country,
+    is_default = false,
+    latitude,
+    longitude,
+    formatted_address
+  }: {
+    user_id: string
+    name: string
+    phone: string
+    address_line1: string
+    address_line2?: string
+    city: string
+    state: string
+    postal_code: string
+    country: string
+    is_default?: boolean
+    latitude?: number
+    longitude?: number
+    formatted_address?: string
+  }) {
+    // Nếu đặt làm mặc định, hủy bỏ mặc định của các địa chỉ khác
+    if (is_default) {
+      await databaseService.addresses.updateMany(
+        { user_id: new ObjectId(user_id), is_default: true },
+        { $set: { is_default: false, updated_at: new Date() } }
+      )
+    } else {
+      // Kiểm tra nếu đây là địa chỉ đầu tiên, thì đặt làm mặc định
+      const count = await databaseService.addresses.countDocuments({
+        user_id: new ObjectId(user_id)
+      })
+
+      if (count === 0) {
+        is_default = true
+      }
+    }
+
+    // Tạo chuỗi địa chỉ đầy đủ nếu không được cung cấp
+    if (!formatted_address) {
+      formatted_address = `${address_line1}, ${city}, ${state}, ${postal_code}, ${country}`
+    }
+
+    // Tạo location nếu có tọa độ
+    let location
+    if (latitude !== undefined && longitude !== undefined) {
+      location = {
+        type: 'Point',
+        coordinates: [longitude, latitude] // MongoDB sử dụng [longitude, latitude]
+      }
+    }
+
+    // Tạo bản ghi địa chỉ mới
     const address = new Address({
-      user_id: payload.user_id,
-      name: payload.name,
-      phone: payload.phone,
-      address_line1: payload.address_line1,
-      address_line2: payload.address_line2,
-      city: payload.city,
-      state: payload.state,
-      postal_code: payload.postal_code,
-      country: payload.country,
-      is_default: payload.is_default || false
+      user_id: new ObjectId(user_id),
+      name,
+      phone,
+      address_line1,
+      address_line2,
+      city,
+      state,
+      postal_code,
+      country,
+      is_default,
+      location: location as any,
+      formatted_address
     })
 
     const result = await databaseService.addresses.insertOne(address)
 
     return { ...address, _id: result.insertedId }
+  }
+
+  // Giữ các phương thức địa lý
+  async findNearbyAddresses(latitude: number, longitude: number, maxDistance: number = 10000) {
+    // Find addresses within the specified distance (in meters)
+    return databaseService.addresses
+      .find({
+        location: {
+          $near: {
+            $geometry: {
+              type: 'Point',
+              coordinates: [longitude, latitude]
+            },
+            $maxDistance: maxDistance
+          }
+        }
+      })
+      .toArray()
+  }
+
+  async estimateDeliveryTime(originLat: number, originLng: number, destLat: number, destLng: number) {
+    // Calculate distance
+    const distanceKm = geocodingService.calculateDistance(originLat, originLng, destLat, destLng)
+
+    // Simple estimation based on distance
+    let minDays = 1
+    let maxDays = 2
+
+    if (distanceKm > 20 && distanceKm <= 100) {
+      minDays = 2
+      maxDays = 3
+    } else if (distanceKm > 100 && distanceKm <= 500) {
+      minDays = 3
+      maxDays = 5
+    } else if (distanceKm > 500) {
+      minDays = 5
+      maxDays = 10
+    }
+
+    return {
+      distance_km: Math.round(distanceKm * 100) / 100, // Round to 2 decimal places
+      estimated_delivery_days: {
+        min: minDays,
+        max: maxDays
+      }
+    }
   }
 
   async updateAddress(address_id: string, payload: UpdateAddressReqBody) {

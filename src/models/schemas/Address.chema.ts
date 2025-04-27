@@ -12,6 +12,11 @@ interface AddressType {
   postal_code: string
   country: string
   is_default: boolean
+  location?: {
+    type: string
+    coordinates: [number, number]
+  }
+  formatted_address?: string
   created_at?: Date
   updated_at?: Date
 }
@@ -30,7 +35,11 @@ export default class Address {
   is_default: boolean
   created_at: Date
   updated_at: Date
-
+  location?: {
+    type: string
+    coordinates: [number, number]
+  }
+  formatted_address?: string
   constructor({
     _id,
     user_id,
@@ -44,7 +53,9 @@ export default class Address {
     country,
     is_default,
     created_at,
-    updated_at
+    updated_at,
+    location,
+    formatted_address
   }: AddressType) {
     const date = new Date()
     this._id = _id
@@ -58,6 +69,8 @@ export default class Address {
     this.postal_code = postal_code
     this.country = country
     this.is_default = is_default
+    this.location = location
+    this.formatted_address = formatted_address
     this.created_at = created_at || date
     this.updated_at = updated_at || date
   }

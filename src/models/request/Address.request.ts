@@ -10,6 +10,11 @@ export interface CreateAddressReqBody {
   postal_code: string
   country: string
   is_default?: boolean
+  location?: {
+    type: string
+    coordinates: [number, number]
+  }
+  formatted_address?: string
 }
 
 export interface UpdateAddressReqBody {

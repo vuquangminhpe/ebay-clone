@@ -22,7 +22,7 @@ export const createAddressController = async (
 
   const result = await addressService.createAddress({
     ...req.body,
-    user_id: new ObjectId(user_id)
+    user_id: user_id
   })
 
   // If this is first address or is_default is true, set as default
@@ -188,4 +188,32 @@ export const setDefaultAddressController = async (
   return res.status(HTTP_STATUS.OK).json({
     message: ADDRESS_MESSAGE.DEFAULT_ADDRESS_SET
   })
+}
+
+export const findNearbyAddressesController = async (req: Request, res: Response) => {
+  const { latitude, longitude, distance = '10000' } = req.query
+
+  try {
+    if (!latitude || !longitude) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        message: 'Latitude and longitude are required'
+      })
+    }
+
+    const result = await addressService.findNearbyAddresses(
+      parseFloat(latitude as string),
+      parseFloat(longitude as string),
+      parseInt(distance as string)
+    )
+
+    return res.status(HTTP_STATUS.OK).json({
+      message: 'Nearby addresses retrieved successfully',
+      result
+    })
+  } catch (error) {
+    console.error('Find nearby addresses error:', error)
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      message: 'Failed to find nearby addresses'
+    })
+  }
 }
