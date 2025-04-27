@@ -10,7 +10,6 @@ import {
   useApplyCoupon,
   useRemoveCoupon
 } from '@/hooks/useCart'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
@@ -20,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { toast } from 'sonner'
 import { ShoppingCart, Loader2, Trash2, ChevronRight, ShieldCheck, ArrowLeft, Check, X, Tag } from 'lucide-react'
+import { Button } from '@/Components/ui/button'
 
 export default function CartPage() {
   const navigate = useNavigate()

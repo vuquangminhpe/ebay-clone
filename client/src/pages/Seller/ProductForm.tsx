@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, JSXElementConstructor, Key, ReactElement, ReactNode } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useForm, useFieldArray, Controller } from 'react-hook-form'
+import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useCategoryTree } from '@/hooks/useCategory'
@@ -30,11 +30,10 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Button } from '@/Components/ui/button'
 
 // Define the form schema with Zod
 const productSchema = z.object({
@@ -183,9 +182,9 @@ export default function ProductForm() {
 
         const response = await mediasApi.uploadImages(file)
         if (response.data && Number(response.data.length) > 0) {
-          const media = response.data
+          const media = response.data.result
           appendMedia({
-            url: media.url,
+            url: (media as any).url,
             type: MediaType.IMAGE,
             is_primary: mediaFields.length === 0 // First image is primary by default
           })
@@ -225,7 +224,7 @@ export default function ProductForm() {
   // Submit form
   const onSubmit = (values: ProductFormValues) => {
     // Check if at least one media is marked as primary
-    if (!values.medias.some((media: { is_primary: any }) => media.is_primary)) {
+    if (!values.medias.some((media: any) => media.is_primary)) {
       if (values.medias.length > 0) {
         values.medias[0].is_primary = true
       } else {
