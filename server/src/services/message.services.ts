@@ -191,7 +191,7 @@ class MessageService {
 
         // Get user details
         const otherUser = await databaseService.users.findOne(
-          { _id: new ObjectId(otherUserId) },
+          { _id: new ObjectId(otherUserId as string) },
           { projection: { name: 1, username: 1, avatar: 1 } }
         )
 

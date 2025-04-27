@@ -5,7 +5,6 @@ import useRouteElement from './useRouteElement'
 import { HelmetProvider } from 'react-helmet-async'
 import { AppContext } from './Contexts/app.context'
 import { getProfileFormLS, localStorageEventTarget } from './utils/auth'
-import ThemeProvider from './components/ThemeProvider'
 import { Toaster } from 'sonner'
 import socket from './utils/socket'
 
@@ -28,17 +27,12 @@ function App() {
   }, [])
 
   const useRouterElement = useRouteElement()
-  
+
   return (
     <HelmetProvider>
-      <ThemeProvider defaultTheme='light' storageKey='vite-ui-theme'>
-       
-       
-        
-        {useRouterElement}
-        <ToastContainer />
-        <Toaster />
-      </ThemeProvider>
+      {useRouterElement}
+      <ToastContainer />
+      <Toaster />
     </HelmetProvider>
   )
 }
