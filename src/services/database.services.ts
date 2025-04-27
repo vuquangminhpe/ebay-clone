@@ -203,7 +203,7 @@ class DatabaseService {
   }
 
   get shipments(): Collection<Shipment> {
-    return this.db.collection('shipments')
+    return this.db.collection('shipping_info')
   }
 
   // Thêm vào phương thức connect để tạo indexes
