@@ -1,4 +1,3 @@
-import configBase from '@/constants/config'
 import {
   LoginRequest,
   RegisterRequest,
@@ -7,8 +6,8 @@ import {
   ForgotPasswordRequest,
   ResetPasswordRequest
 } from '@/types/Auth.type'
-import { SuccessResponse } from '@/types/utils.type'
 import { User, UserProfile } from '@/types/User.type'
+import { SuccessResponse } from '@/types/utils.type'
 import http from '@/utils/http'
 
 /**

@@ -1,11 +1,5 @@
-import {
-  Product,
-  ProductListResponse,
-  CreateProductRequest,
-  UpdateProductRequest,
-  ProductCondition
-} from '@/types/Product.type'
-import { SuccessResponse } from '@/types/utils.type'
+import { Product, CreateProductRequest, UpdateProductRequest, ProductCondition } from '@/types/type'
+import { ProductListResponse, SuccessResponse } from '@/types/utils.type'
 import http from '@/utils/http'
 
 /**

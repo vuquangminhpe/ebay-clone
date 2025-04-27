@@ -1,10 +1,6 @@
-import {
-  Category,
-  CategoryTree,
-  CategoryWithProducts,
-  CreateCategoryRequest,
-  UpdateCategoryRequest
-} from '@/types/Category.type'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { CategoryTree, CreateCategoryRequest, UpdateCategoryRequest } from '@/types/Category.type'
+import { Category, CategoryWithProducts } from '@/types/type'
 import { SuccessResponse } from '@/types/utils.type'
 import http from '@/utils/http'
 

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Address, CreateAddressRequest, SetDefaultAddressRequest, UpdateAddressRequest } from '@/types/Address.type'
 import { SuccessResponse } from '@/types/utils.type'
 import http from '@/utils/http'
 

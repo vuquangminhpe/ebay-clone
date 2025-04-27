@@ -1,6 +1,6 @@
 import { SuccessResponse } from '@/types/utils.type'
 import http from '@/utils/http'
-import { Product } from '@/types/products.type' // Import Product type if defined elsewhere
+import { Product } from '@/types/type' // Import Product type if defined elsewhere
 
 // Request types
 export interface CreateStoreRequest {

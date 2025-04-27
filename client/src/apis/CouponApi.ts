@@ -1,3 +1,4 @@
+import { typeParams } from '@/types/typeParams'
 import { SuccessResponse } from '@/types/utils.type'
 import http from '@/utils/http'
 

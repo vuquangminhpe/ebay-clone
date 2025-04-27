@@ -1,5 +1,4 @@
-import configBase from '@/constants/config'
-import { typeParams } from '@/types/reference.type'
+import { typeParams } from '@/types/typeParams'
 import { SuccessResponse } from '@/types/utils.type'
 import http from '@/utils/http'
 

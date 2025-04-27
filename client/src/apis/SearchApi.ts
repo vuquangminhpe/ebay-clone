@@ -1,7 +1,7 @@
 import { SuccessResponse } from '@/types/utils.type'
 import http from '@/utils/http'
-import { ProductCondition } from '@/types/products.type'
-import { Product } from '@/types/products.type'
+import { ProductCondition } from '@/types/type'
+import { Product } from '@/types/type'
 
 // Query parameters
 export interface AdvancedSearchParams {

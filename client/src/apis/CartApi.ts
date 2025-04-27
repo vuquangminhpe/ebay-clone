@@ -1,4 +1,4 @@
-import { Cart, AddToCartRequest, UpdateCartItemRequest, CartTotal } from '@/types/Cart.type'
+import { AddToCartRequest, Cart, CartTotal, UpdateCartItemRequest } from '@/types/Cart.type'
 import { SuccessResponse } from '@/types/utils.type'
 import http from '@/utils/http'
 

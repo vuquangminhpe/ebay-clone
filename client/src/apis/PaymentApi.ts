@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { SuccessResponse } from '@/types/utils.type'
 import http from '@/utils/http'
 
