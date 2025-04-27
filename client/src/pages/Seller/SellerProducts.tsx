@@ -435,7 +435,7 @@ export default function SellerProducts() {
                     <PaginationItem>
                       <PaginationNext
                         onClick={() => handlePageChange(Math.min(productsData?.pagination?.totalPages || 1, page + 1))}
-                        disabled={!productsData?.pagination || ((page >= productsData.pagination.totalPages) as any)}
+                        disabled={!productsData?.pagination || ((page >= productsData.pagination.totalPages) as boolean)}
                       />
                     </PaginationItem>
                   </PaginationContent>
